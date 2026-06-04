@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { LayoutDashboard, ReceiptText, Wallet, Settings, Menu, X, Plus, Target, Gauge } from 'lucide-react';
 import { useState } from 'react';
+import { UserButton } from '@clerk/nextjs';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,11 +45,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
 
-        <div className="p-6 border-t">
-           <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-600 group-hover:w-full group-hover:justify-start group-hover:gap-3 group-hover:px-2 transition-all overflow-hidden">
-              <div className="min-w-[24px] h-6 rounded-full bg-gray-300 flex items-center justify-center">M</div>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs">Mon Compte</span>
-           </div>
+        <div className="p-6 border-t flex items-center justify-center group-hover:justify-start group-hover:gap-3 transition-all">
+           <UserButton showName={false} appearance={{ elements: { userButtonAvatarBox: 'w-8 h-8' } }} />
+           <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold text-xs text-gray-600 whitespace-nowrap overflow-hidden">
+             Mon Compte
+           </span>
         </div>
       </aside>
 

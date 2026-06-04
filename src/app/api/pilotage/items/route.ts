@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { GetMonthlyItemsUseCase, CreateMonthlyItemUseCase, UpdateMonthlyItemUseCase, DeleteMonthlyItemUseCase } from '@/core/application/MonthlyItemUseCases';
 import { PrismaMonthlyItemRepository } from '@/infrastructure/PrismaRepositories';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { searchParams } = new URL(request.url);
   const mParam = searchParams.get('month');
   const yParam = searchParams.get('year');
@@ -27,6 +31,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const repo = new PrismaMonthlyItemRepository();
@@ -39,6 +46,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { id, ...data } = body;
@@ -54,6 +64,9 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

@@ -4,10 +4,14 @@ import { UpdateAccountUseCase } from '@/core/application/UpdateAccountUseCase';
 import { CreateAccountUseCase } from '@/core/application/CreateAccountUseCase';
 import { DeleteAccountUseCase } from '@/core/application/DeleteAccountUseCase';
 import { PrismaAccountRepository } from '@/infrastructure/PrismaAccountRepository';
+import { auth } from '@clerk/nextjs/server';
 
 const accountRepository = new PrismaAccountRepository();
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const getAccountsUseCase = new GetAccountsUseCase(accountRepository);
     const accounts = await getAccountsUseCase.execute();
@@ -19,6 +23,9 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { id, ...data } = body;
@@ -38,6 +45,9 @@ export async function PATCH(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const createAccountUseCase = new CreateAccountUseCase(accountRepository);
@@ -50,6 +60,9 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

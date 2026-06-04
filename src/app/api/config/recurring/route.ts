@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { GetRecurringTransactionsUseCase, CreateRecurringTransactionUseCase, UpdateRecurringTransactionUseCase, DeleteRecurringTransactionUseCase } from '@/core/application/RecurringTransactionUseCases';
 import { PrismaRecurringTransactionRepository } from '@/infrastructure/PrismaRepositories';
+import { auth } from '@clerk/nextjs/server';
 
 const repo = new PrismaRecurringTransactionRepository();
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const useCase = new GetRecurringTransactionsUseCase(repo);
     const data = await useCase.execute();
@@ -15,6 +19,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const useCase = new CreateRecurringTransactionUseCase(repo);
@@ -26,6 +33,9 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { id, ...data } = body;
@@ -39,6 +49,9 @@ export async function PUT(request: Request) {
 
 // Pour DELETE, on pourrait avoir un paramètre d'URL ou utiliser un body
 export async function DELETE(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

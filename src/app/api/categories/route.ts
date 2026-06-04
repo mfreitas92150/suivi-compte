@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { GetCategoriesUseCase, CreateCategoryUseCase, UpdateCategoryUseCase, DeleteCategoryUseCase } from '@/core/application/CategoryUseCases';
 import { PrismaCategoryRepository } from '@/infrastructure/PrismaRepositories';
+import { auth } from '@clerk/nextjs/server';
 
 const repo = new PrismaCategoryRepository();
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const useCase = new GetCategoriesUseCase(repo);
     const categories = await useCase.execute();
@@ -15,6 +19,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     console.log("POST /api/categories", body);
@@ -28,6 +35,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     console.log("PATCH /api/categories", body);
@@ -44,6 +54,9 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

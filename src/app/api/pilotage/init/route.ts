@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { InitializeMonthUseCase } from '@/core/application/MonthlyItemUseCases';
 import { PrismaCategoryRepository, PrismaRecurringTransactionRepository, PrismaEnvelopeRepository, PrismaMonthlyItemRepository } from '@/infrastructure/PrismaRepositories';
+import { auth } from '@clerk/nextjs/server';
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { month, year } = body;

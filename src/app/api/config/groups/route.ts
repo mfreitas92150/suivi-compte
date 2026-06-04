@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { ExpenseGroupUseCases } from '@/core/application/ExpenseGroupUseCases';
 import { PrismaExpenseGroupRepository } from '@/infrastructure/PrismaRepositories';
+import { auth } from '@clerk/nextjs/server';
 
 const repo = new PrismaExpenseGroupRepository();
 const useCases = new ExpenseGroupUseCases(repo);
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const data = await useCases.getAll();
     return NextResponse.json(data);
@@ -15,6 +19,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { name } = await request.json();
     const data = await useCases.create(name);
@@ -26,6 +33,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { id, ...data } = body;
@@ -37,6 +47,9 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

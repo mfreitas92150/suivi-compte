@@ -14,8 +14,25 @@ Le projet suit les principes de la **Clean Architecture** (Architecture Hexagona
 - `src/app/api` : Backend RESTful exposant les cas d'usage via des endpoints JSON.
 - `src/presentation` : Frontend React/Next.js consommant exclusivement les API REST.
 
+## Sécurité et Authentification
+
+L'application utilise **Clerk** comme solution d'IAM (Identity and Access Management) pour sécuriser l'accès aux données.
+
+### Principes de Sécurité
+- **Authentification** : Gérée par Clerk via le App Router de Next.js.
+- **Protection des Routes** : Un middleware Next.js (`src/middleware.ts`) bloque l'accès aux pages et aux API par défaut pour les utilisateurs non authentifiés.
+- **Protection de l'API** : Chaque point de terminaison d'API doit valider la session via `auth()` de Clerk.
+- **Utilisateurs autorisés** : Seuls les comptes explicitement autorisés (ou via une whitelist d'emails dans le dashboard Clerk) peuvent accéder aux données.
+
+### Configuration requise (.env)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
+
 ## Stack Technique
 - **Frontend/Backend** : Next.js (App Router) hébergé sur **Vercel**.
+- **Sécurité** : **Clerk** (Authentification et gestion des sessions).
 - **Base de données** : **Turso** (LibSQL), compatible SQLite.
 - **ORM** : Prisma avec adaptateur LibSQL.
 - **State Management** : React Query (TanStack Query) pour la synchronisation API.

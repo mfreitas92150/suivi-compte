@@ -10,6 +10,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.4.3",
     "@libsql/client": "^0.8.1",
     "@prisma/adapter-libsql": "^6.4.1",
     "@prisma/client": "^6.4.1",

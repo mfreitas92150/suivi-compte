@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { GetTransactionsUseCase, CreateTransactionUseCase } from '@/core/application/TransactionUseCases';
 import { PrismaTransactionRepository } from '@/infrastructure/PrismaRepositories';
+import { auth } from '@clerk/nextjs/server';
 
 const repo = new PrismaTransactionRepository();
 
 export async function GET(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { searchParams } = new URL(request.url);
   const month = searchParams.get('month') ? parseInt(searchParams.get('month')!) : undefined;
   const year = searchParams.get('year') ? parseInt(searchParams.get('year')!) : undefined;
@@ -20,6 +24,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const useCase = new CreateTransactionUseCase(repo);
