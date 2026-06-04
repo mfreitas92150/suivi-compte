@@ -1,0 +1,121 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  name         String
+  type         String        // 'CHECKING', 'SAVINGS', etc.
+  transactions Transaction[]
+  balance      Float         @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  type         String        // 'INCOME', 'EXPENSE', 'TRANSFER'
+  defaultAmount Float?       // Template for envelopes
+  transactions Transaction[]
+  envelopes    Envelope[]
+  recurringTransactions RecurringTransaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model ExpenseGroup {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  order        Int           @default(0)
+  transactions RecurringTransaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model RecurringTransaction {
+  id          String   @id @default(cuid())
+  label       String
+  amount      Float
+  type        String   // 'INCOME' or 'EXPENSE'
+  groupId     String?
+  group       ExpenseGroup? @relation(fields: [groupId], references: [id])
+  active      Boolean  @default(true)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  date        DateTime
+  amount      Float
+  description String
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id])
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  isFixed     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Envelope {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  amount     Float    // Budgeted amount
+  month      Int
+  year       Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([categoryId, month, year])
+}
+
+model MedicalTracking {
+  id               String   @id @default(cuid())
+  date             DateTime
+  description      String
+  totalAmount      Float
+  socialSecurity   Float    @default(0)
+  mutualInsurance  Float    @default(0)
+  restToPay        Float    @default(0)
+  isReimbursed     Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Savings {
+  id        String   @id @default(cuid())
+  month     Int
+  year      Int
+  amount    Float
+  target    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([month, year, target])
+}
+
+model MonthlyItem {
+  id          String   @id @default(cuid())
+  label       String
+  amount      Float
+  type        String   // 'INCOME' or 'EXPENSE'
+  month       Int
+  year        Int
+  checked     Boolean  @default(false)
+  recurringId String?  // Reference to template if any
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([label, month, year, type])
+}
