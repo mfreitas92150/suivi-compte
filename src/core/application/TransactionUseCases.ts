@@ -18,3 +18,11 @@ export class GetTransactionsUseCase {
     return this.transactionRepository.findAll(filters);
   }
 }
+
+export class DeleteTransactionUseCase {
+  constructor(private transactionRepository: ITransactionRepository) {}
+
+  async execute(id: string): Promise<void> {
+    return this.transactionRepository.delete(id);
+  }
+}
