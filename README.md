@@ -34,3 +34,22 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Data Management Skills (CLI)
+
+Vous pouvez manipuler les données directement via la ligne de commande ou demander à l'agent Gemini de le faire.
+
+- **Lister les comptes** : `npx tsx scripts/manage_data.ts list-accounts`
+- **Lister les catégories** : `npx tsx scripts/manage_data.ts list-categories`
+- **Ajouter une transaction** : 
+  `npx tsx scripts/manage_data.ts add-transaction --amount <montant> --desc "<description>" --account "<nom ou id>" --category "<nom ou id>"`
+- **Ajouter un élément de pilotage** : 
+  `npx tsx scripts/manage_data.ts add-item --label "<nom>" --amount <montant> --type <INCOME/EXPENSE> --month <1-12> --year <202X>`
+- **Supprimer les transactions d'un mois** : 
+  `npx tsx scripts/manage_data.ts delete-month --month <1-12> --year <202X>`
+- **Supprimer le pilotage d'un mois (fixes/exceptionnels)** : 
+  `npx tsx scripts/manage_data.ts delete-items --month <1-12> --year <202X>`
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:

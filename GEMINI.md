@@ -60,6 +60,18 @@ L'application est déployée automatiquement via Vercel à chaque push sur la br
 - **Mobile-First** : Toute nouvelle fonctionnalité de saisie doit avoir une interface simplifiée pour smartphone.
 - **Données Sensibles** : Les secrets et URLs de base de données doivent rester dans le fichier `.env` (non committé).
 
+## Manipulation des Données (Agent Skills)
+
+L'agent (Gemini) peut manipuler les données directement via des scripts CLI. C'est la méthode recommandée pour ajouter des transactions ou des éléments mensuels.
+
+### Commandes Disponibles
+- `npx tsx scripts/manage_data.ts list-accounts` : Liste les comptes avec leurs IDs.
+- `npx tsx scripts/manage_data.ts list-categories` : Liste les catégories avec leurs IDs.
+- `npx tsx scripts/manage_data.ts add-transaction --amount <montant> --desc "<description>" --account "<nom ou id>" --category "<nom ou id>"` : Ajoute une transaction.
+- `npx tsx scripts/manage_data.ts add-item --label "<nom>" --amount <montant> --type <INCOME/EXPENSE> --month <1-12> --year <202X>` : Ajoute un élément mensuel (pilotage).
+- `npx tsx scripts/manage_data.ts delete-month --month <1-12> --year <202X>` : Supprime toutes les transactions bancaires d'un mois.
+- `npx tsx scripts/manage_data.ts delete-items --month <1-12> --year <202X>` : Supprime tous les éléments de pilotage (fixes et exceptionnels) d'un mois.
+
 ## Commandes Utiles
 - `npm run dev` : Lancer en mode développement.
 - `npx prisma migrate dev` : Appliquer les changements de schéma à la base SQLite.
