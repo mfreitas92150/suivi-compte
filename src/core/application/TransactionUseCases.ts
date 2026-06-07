@@ -26,3 +26,11 @@ export class DeleteTransactionUseCase {
     return this.transactionRepository.delete(id);
   }
 }
+
+export class UpdateTransactionUseCase {
+  constructor(private transactionRepository: ITransactionRepository) {}
+
+  async execute(id: string, data: Partial<Transaction>): Promise<Transaction> {
+    return this.transactionRepository.update(id, data);
+  }
+}

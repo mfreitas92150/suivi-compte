@@ -49,6 +49,7 @@ export interface Transaction {
   accountId: string;
   categoryId: string;
   isFixed: boolean;
+  checked: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -192,6 +192,42 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     return t;
   }
 
+  async update(id: string, transaction: Partial<Transaction>): Promise<Transaction> {
+    const oldTransaction = await prisma.transaction.findUnique({ where: { id } });
+    if (!oldTransaction) throw new Error("Transaction not found");
+
+    const t = await prisma.transaction.update({
+      where: { id },
+      data: transaction
+    });
+
+    // Handle balance updates
+    const amountChanged = transaction.amount !== undefined && transaction.amount !== oldTransaction.amount;
+    const accountChanged = transaction.accountId !== undefined && transaction.accountId !== oldTransaction.accountId;
+
+    if (accountChanged) {
+      // Remove old amount from old account
+      await prisma.account.update({
+        where: { id: oldTransaction.accountId },
+        data: { balance: { decrement: oldTransaction.amount } }
+      });
+      // Add new amount to new account
+      await prisma.account.update({
+        where: { id: t.accountId },
+        data: { balance: { increment: t.amount } }
+      });
+    } else if (amountChanged) {
+      // Update amount on the same account
+      const diff = t.amount - oldTransaction.amount;
+      await prisma.account.update({
+        where: { id: t.accountId },
+        data: { balance: { increment: diff } }
+      });
+    }
+
+    return t;
+  }
+
   async delete(id: string): Promise<void> {
     const t = await prisma.transaction.findUnique({ where: { id } });
     if (t) {

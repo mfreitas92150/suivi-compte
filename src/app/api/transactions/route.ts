@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GetTransactionsUseCase, CreateTransactionUseCase, DeleteTransactionUseCase } from '@/core/application/TransactionUseCases';
+import { GetTransactionsUseCase, CreateTransactionUseCase, DeleteTransactionUseCase, UpdateTransactionUseCase } from '@/core/application/TransactionUseCases';
 import { PrismaTransactionRepository } from '@/infrastructure/PrismaRepositories';
 import { auth } from '@clerk/nextjs/server';
 
@@ -55,5 +55,25 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete transaction' }, { status: 500 });
+  }
+}
+export async function PATCH(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const body = await request.json();
+    const { id, ...data } = body;
+    
+    if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+
+    const useCase = new UpdateTransactionUseCase(repo);
+    const transaction = await useCase.execute(id, {
+      ...data,
+      date: data.date ? new Date(data.date) : undefined
+    });
+    return NextResponse.json(transaction);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }

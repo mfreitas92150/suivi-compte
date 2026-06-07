@@ -26,6 +26,7 @@ export interface ICategoryRepository {
 export interface ITransactionRepository {
   findAll(filters?: { month?: number; year?: number; accountId?: string }): Promise<Transaction[]>;
   create(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction>;
+  update(id: string, transaction: Partial<Transaction>): Promise<Transaction>;
   delete(id: string): Promise<void>;
 }
 

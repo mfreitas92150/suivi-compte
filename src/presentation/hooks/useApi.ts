@@ -326,3 +326,17 @@ export const useDeleteTransaction = () => {
     },
   });
 };
+
+export const useUpdateTransaction = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: Partial<Transaction> & { id: string }) => {
+      const { data: updated } = await api.patch('/transactions', { id, ...data });
+      return updated;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+};

@@ -31,7 +31,8 @@ export default function MobileAddPage() {
         categoryId: formData.categoryId,
         accountId: formData.accountId,
         date: new Date(formData.date),
-        isFixed: false
+        isFixed: false,
+        checked: false
       });
       setIsSuccess(true);
       setTimeout(() => {
