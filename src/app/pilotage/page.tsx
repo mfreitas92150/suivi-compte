@@ -19,8 +19,24 @@ export default function PilotagePage() {
   const { month, year, currentDate, setDate } = useMonthNavigation();
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const selectorRef = useRef<HTMLDivElement>(null);
+  const yearScrollRef = useRef<HTMLDivElement>(null);
+  const monthScrollRef = useRef<HTMLDivElement>(null);
   
   const [localYear, setLocalYear] = useState(year);
+
+  // Centering logic for date selector
+  useEffect(() => {
+    if (isSelectorOpen) {
+      const timer = setTimeout(() => {
+        const activeYear = yearScrollRef.current?.querySelector('.active-year');
+        activeYear?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+        const activeMonth = monthScrollRef.current?.querySelector('.active-month');
+        activeMonth?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isSelectorOpen, localYear]);
 
   // Update localYear when year changes from URL
   useEffect(() => {
@@ -132,7 +148,7 @@ export default function PilotagePage() {
 
   const expenseCategories = categories?.filter(c => c.type === 'EXPENSE') || [];
   const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-  const years = [2026, 2025, 2024];
+  const years = [2030, 2029, 2028, 2027, 2026, 2025, 2024];
 
   const getSpentForCategory = (categoryId: string) => {
     const catTransactions = transactions?.filter(tx => tx.categoryId === categoryId) || [];
@@ -206,17 +222,29 @@ export default function PilotagePage() {
                 <div className="flex h-80">
                   <div className="w-1/3 border-r bg-gray-50/50 flex flex-col">
                     <div className="p-3 text-[10px] font-black uppercase text-gray-600 text-center border-b">Années</div>
-                    <div className="flex-1 overflow-y-auto">
+                    <div ref={yearScrollRef} className="flex-1 overflow-y-auto">
                       {years.map(y => (
-                        <button key={y} onClick={() => setLocalYear(y)} className={`w-full p-4 text-sm font-black transition-all ${localYear === y ? 'bg-white text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>{y}</button>
+                        <button 
+                          key={y} 
+                          onClick={() => setLocalYear(y)} 
+                          className={`w-full p-4 text-sm font-black transition-all ${localYear === y ? 'bg-white text-blue-600 active-year' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                          {y}
+                        </button>
                       ))}
                     </div>
                   </div>
                   <div className="flex-1 flex flex-col">
                     <div className="p-3 text-[10px] font-black uppercase text-gray-600 text-center border-b">Mois ({localYear})</div>
-                    <div className="flex-1 overflow-y-auto p-2">
+                    <div ref={monthScrollRef} className="flex-1 overflow-y-auto p-2">
                       {monthNames.map((m, i) => (
-                        <button key={m} onClick={() => { setDate(new Date(localYear, i, 1)); setIsSelectorOpen(false); }} className={`w-full p-3 text-sm text-left rounded-xl transition-all ${month === i + 1 && year === localYear ? 'bg-blue-600 text-white font-bold' : 'text-gray-600 hover:bg-blue-50'}`}>{m}</button>
+                        <button 
+                          key={m} 
+                          onClick={() => { setDate(new Date(localYear, i, 1)); setIsSelectorOpen(false); }} 
+                          className={`w-full p-3 text-sm text-left rounded-xl transition-all ${month === i + 1 && year === localYear ? 'bg-blue-600 text-white font-bold active-month' : 'text-gray-600 hover:bg-blue-50'}`}
+                        >
+                          {m}
+                        </button>
                       ))}
                     </div>
                   </div>

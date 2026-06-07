@@ -21,9 +21,19 @@ const TimeRibbon = () => {
   const [selected, setSelected] = useState(5); // Juin
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const activeItem = scrollRef.current?.children[selected] as HTMLElement;
+    if (activeItem) {
+      activeItem.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest'
+      });
+    }
+  }, [selected]);
+
   const selectMonth = (idx: number) => {
     setSelected(idx);
-    // Logic to center the selected month could be added here
   };
 
   return (
@@ -112,15 +122,37 @@ const ModalSelector = ({ onSelect, currentMonth, currentYear }: SelectorProps) =
 
 // --- 3. OPTION : TIMELINE LATÉRALE (DÉTAILLÉE) ---
 const SidebarTimeline = ({ onSelect, currentMonth, currentYear }: SelectorProps) => {
-  const years = [2026, 2025, 2024];
+  const years = [2030, 2029, 2028, 2027, 2026, 2025, 2024];
+  const yearScrollRef = useRef<HTMLDivElement>(null);
+  const monthScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Scroll selected year into view
+    const activeYearEl = yearScrollRef.current?.querySelector('.active-year') as HTMLElement;
+    if (activeYearEl) {
+      activeYearEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [currentYear]);
+
+  useEffect(() => {
+    // Scroll selected month into view
+    const activeMonthEl = monthScrollRef.current?.querySelector('.active-month') as HTMLElement;
+    if (activeMonthEl) {
+      activeMonthEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [currentMonth]);
 
   return (
     <div className="bg-white p-4 rounded-xl border shadow-sm">
       <h3 className="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wider">3. Timeline Latérale (Historique)</h3>
       <div className="flex h-64 border rounded-lg overflow-hidden">
-        <div className="w-1/3 bg-gray-50 border-r overflow-y-auto">
+        <div ref={yearScrollRef} className="w-1/3 bg-gray-50 border-r overflow-y-auto">
           {years.map(year => (
-            <div key={year} onClick={() => onSelect(currentMonth, year)} className={`p-3 border-b hover:bg-white cursor-pointer group ${currentYear === year ? 'bg-white' : ''}`}>
+            <div 
+              key={year} 
+              onClick={() => onSelect(currentMonth, year)} 
+              className={`p-3 border-b hover:bg-white cursor-pointer group ${currentYear === year ? 'bg-white active-year' : ''}`}
+            >
               <div className="flex justify-between items-center">
                 <span className={`font-bold ${currentYear === year ? 'text-blue-600' : 'text-gray-700'}`}>{year}</span>
                 <ChevronRight className={`w-4 h-4 ${currentYear === year ? 'text-blue-600' : 'text-gray-400'} group-hover:translate-x-1 transition-transform`} />
@@ -128,7 +160,7 @@ const SidebarTimeline = ({ onSelect, currentMonth, currentYear }: SelectorProps)
             </div>
           ))}
         </div>
-        <div className="flex-1 p-3 overflow-y-auto">
+        <div ref={monthScrollRef} className="flex-1 p-3 overflow-y-auto">
           <div className="grid grid-cols-2 gap-2">
             {months.map((m, i) => (
               <button
@@ -136,7 +168,7 @@ const SidebarTimeline = ({ onSelect, currentMonth, currentYear }: SelectorProps)
                 onClick={() => onSelect(i, currentYear)}
                 className={`p-2 text-xs text-left rounded border transition-all ${
                   currentMonth === i
-                    ? "border-blue-600 bg-blue-50 text-blue-700 font-bold"
+                    ? "border-blue-600 bg-blue-50 text-blue-700 font-bold active-month"
                     : "border-gray-100 hover:border-blue-200"
                 }`}
               >
@@ -194,8 +226,8 @@ const DataPreview = ({ month, year }: { month: string, year: number }) => {
 };
 
 export default function DesignComparisonPage() {
-  const [selectedMonth, setSelectedMonth] = useState(5);
-  const [selectedYear, setSelectedYear] = useState(2026);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   return (
     <DashboardLayout>
