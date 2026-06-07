@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { MobileNavigation } from '@/presentation/components/mobile/MobileNavigation';
+import { MobileEntryForm } from '@/presentation/components/mobile/MobileEntryForm';
 
 export default function MobilePage() {
   const [activeTab, setActiveTab] = useState<'saisie' | 'enveloppes'>('saisie');
@@ -10,7 +11,7 @@ export default function MobilePage() {
     <div className="min-h-screen bg-gray-50 pb-24">
       <main className="p-4">
         {activeTab === 'saisie' ? (
-          <div>Vue Saisie (En cours)</div>
+          <MobileEntryForm />
         ) : (
           <div>Vue Enveloppes (En cours)</div>
         )}
