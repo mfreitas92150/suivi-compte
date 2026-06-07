@@ -3,12 +3,11 @@
 import { useState } from 'react';
 import DashboardLayout from "@/presentation/components/DashboardLayout";
 import { useCategories, useEnvelopes, useTransactions, useUpsertEnvelope } from "@/presentation/hooks/useApi";
+import { useMonthNavigation } from "@/presentation/hooks/useMonthNavigation";
 import { Wallet, ChevronLeft, ChevronRight, Edit2, Check, X, TrendingDown, Target, AlertCircle } from 'lucide-react';
 
 export default function EnvelopesPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const month = currentDate.getMonth() + 1;
-  const year = currentDate.getFullYear();
+  const { month, year, currentDate, setDate } = useMonthNavigation();
 
   const { data: categories } = useCategories();
   const { data: envelopes, isLoading: envLoading } = useEnvelopes({ month, year });
@@ -21,11 +20,11 @@ export default function EnvelopesPage() {
   const expenseCategories = categories?.filter(c => c.type === 'EXPENSE') || [];
 
   const handlePrevMonth = () => {
-    setCurrentDate(new Date(year, month - 2, 1));
+    setDate(new Date(year, month - 2, 1));
   };
 
   const handleNextMonth = () => {
-    setCurrentDate(new Date(year, month, 1));
+    setDate(new Date(year, month, 1));
   };
 
   const startEdit = (categoryId: string, currentAmount: number) => {

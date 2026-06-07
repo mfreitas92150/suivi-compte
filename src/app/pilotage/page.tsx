@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import DashboardLayout from "@/presentation/components/DashboardLayout";
 import { useCategories, useEnvelopes, useTransactions, useAccounts, useUpdateAccount, useRecurringTransactions, useMonthlyItems, useCreateMonthlyItem, useUpdateMonthlyItem, useDeleteMonthlyItem, useInitializeMonth } from "@/presentation/hooks/useApi";
+import { useMonthNavigation } from "@/presentation/hooks/useMonthNavigation";
 import { Wallet, ChevronDown, Filter, CheckCircle2, Circle, TrendingUp, TrendingDown, Landmark, ReceiptText, Plus, Loader2, Trash2, RefreshCcw } from 'lucide-react';
 
 // --- Types ---
@@ -15,13 +16,16 @@ interface ChecklistItem {
 }
 
 export default function PilotagePage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const { month, year, currentDate, setDate } = useMonthNavigation();
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const selectorRef = useRef<HTMLDivElement>(null);
   
-  const month = currentDate.getMonth() + 1;
-  const year = currentDate.getFullYear();
   const [localYear, setLocalYear] = useState(year);
+
+  // Update localYear when year changes from URL
+  useEffect(() => {
+    setLocalYear(year);
+  }, [year]);
 
   // --- Hooks API ---
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
@@ -212,7 +216,7 @@ export default function PilotagePage() {
                     <div className="p-3 text-[10px] font-black uppercase text-gray-600 text-center border-b">Mois ({localYear})</div>
                     <div className="flex-1 overflow-y-auto p-2">
                       {monthNames.map((m, i) => (
-                        <button key={m} onClick={() => { setCurrentDate(new Date(localYear, i, 1)); setIsSelectorOpen(false); }} className={`w-full p-3 text-sm text-left rounded-xl transition-all ${month === i + 1 && year === localYear ? 'bg-blue-600 text-white font-bold' : 'text-gray-600 hover:bg-blue-50'}`}>{m}</button>
+                        <button key={m} onClick={() => { setDate(new Date(localYear, i, 1)); setIsSelectorOpen(false); }} className={`w-full p-3 text-sm text-left rounded-xl transition-all ${month === i + 1 && year === localYear ? 'bg-blue-600 text-white font-bold' : 'text-gray-600 hover:bg-blue-50'}`}>{m}</button>
                       ))}
                     </div>
                   </div>

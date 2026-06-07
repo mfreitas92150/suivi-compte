@@ -2,6 +2,7 @@
 
 import DashboardLayout from "@/presentation/components/DashboardLayout";
 import { useAccounts, useTransactions, useCategories, useUpdateAccount } from "@/presentation/hooks/useApi";
+import { useMonthNavigation } from "@/presentation/hooks/useMonthNavigation";
 import Tresorerie from "@/presentation/components/Tresorerie";
 import { 
   BarChart, 
@@ -16,10 +17,13 @@ import {
 import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 
 export default function Home() {
+  const { month, year } = useMonthNavigation();
   const { data: accounts } = useAccounts();
-  const { data: transactions } = useTransactions();
+  const { data: transactions } = useTransactions({ month, year });
   const { data: categories } = useCategories();
   const updateAccount = useUpdateAccount();
+
+  const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 
   const handleUpdateBalance = async (id: string, balance: number) => {
     await updateAccount.mutateAsync({ id, balance });
@@ -43,7 +47,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-gray-800">Vue d'ensemble</h2>
           <div className="flex items-center space-x-2 bg-white p-2 rounded-lg border shadow-sm text-gray-600">
             <Calendar className="w-4 h-4" />
-            <span className="text-sm font-medium">Juin 2026</span>
+            <span className="text-sm font-medium">{monthNames[month - 1]} {year}</span>
           </div>
         </div>
 
@@ -54,7 +58,7 @@ export default function Home() {
               <TrendingUp className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Revenus (Juin)</p>
+              <p className="text-sm text-gray-500">Revenus ({monthNames[month - 1]})</p>
               <h3 className="text-2xl font-bold text-green-600">+2 450 €</h3>
             </div>
           </div>
@@ -64,7 +68,7 @@ export default function Home() {
               <TrendingDown className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Dépenses (Juin)</p>
+              <p className="text-sm text-gray-500">Dépenses ({monthNames[month - 1]})</p>
               <h3 className="text-2xl font-bold text-red-600">-1 820 €</h3>
             </div>
           </div>
@@ -75,7 +79,7 @@ export default function Home() {
             </div>
             <div>
               <p className="text-sm text-gray-500">Mois en cours</p>
-              <h3 className="text-2xl font-bold">Juin 2026</h3>
+              <h3 className="text-2xl font-bold">{monthNames[month - 1]} {year}</h3>
             </div>
           </div>
         </div>

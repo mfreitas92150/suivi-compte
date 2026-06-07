@@ -4,15 +4,21 @@ import Link from 'next/link';
 import { LayoutDashboard, ReceiptText, Wallet, Settings, Menu, X, Plus, Target, Gauge } from 'lucide-react';
 import { useState } from 'react';
 import { UserButton } from '@clerk/nextjs';
+import { useSearchParams } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const searchParams = useSearchParams();
+  
+  const month = searchParams.get('month');
+  const year = searchParams.get('year');
+  const queryString = (month && year) ? `?month=${month}&year=${year}` : '';
 
   const navItems = [
-    { name: 'Tableau de bord', href: '/', icon: LayoutDashboard, disabled: true },
-    { name: 'Pilotage', href: '/pilotage', icon: Gauge },
-    { name: 'Enveloppes', href: '/envelopes', icon: Target, disabled: true },
-    { name: 'Transactions', href: '/transactions', icon: ReceiptText },
+    { name: 'Tableau de bord', href: `/${queryString}`, icon: LayoutDashboard, disabled: true },
+    { name: 'Pilotage', href: `/pilotage${queryString}`, icon: Gauge },
+    { name: 'Enveloppes', href: `/envelopes${queryString}`, icon: Target, disabled: true },
+    { name: 'Transactions', href: `/transactions${queryString}`, icon: ReceiptText },
     { name: 'Paramètres', href: '/config', icon: Settings },
   ];
 

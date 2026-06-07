@@ -3,20 +3,24 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import DashboardLayout from "@/presentation/components/DashboardLayout";
 import { useTransactions, useCategories, useAccounts, useCreateTransaction, useDeleteTransaction, useEnvelopes, useUpdateTransaction } from "@/presentation/hooks/useApi";
+import { useMonthNavigation } from "@/presentation/hooks/useMonthNavigation";
 import { 
   Plus, Search, ChevronDown, Calendar, Tag, CreditCard, 
   Loader2, Trash2, X, CheckCircle2, Circle
 } from 'lucide-react';
 
 export default function TransactionsPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const { month, year, currentDate, setDate } = useMonthNavigation();
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const selectorRef = useRef<HTMLDivElement>(null);
   
-  const month = currentDate.getMonth() + 1;
-  const year = currentDate.getFullYear();
   const [localYear, setLocalYear] = useState(year);
+
+  // Update localYear when year changes from URL
+  useEffect(() => {
+    setLocalYear(year);
+  }, [year]);
 
   // --- Hooks API ---
   const { data: transactions, isLoading: transactionsLoading } = useTransactions({ month, year });
@@ -190,7 +194,7 @@ export default function TransactionsPage() {
                     <div className="p-3 text-[10px] font-black uppercase text-gray-600 text-center border-b">Mois ({localYear})</div>
                     <div className="flex-1 overflow-y-auto p-2">
                       {monthNames.map((m, i) => (
-                        <button key={m} onClick={() => { setCurrentDate(new Date(localYear, i, 1)); setIsSelectorOpen(false); }} className={`w-full p-3 text-sm text-left rounded-xl transition-all ${month === i + 1 && year === localYear ? 'bg-blue-600 text-white font-bold' : 'text-gray-600 hover:bg-blue-50'}`}>{m}</button>
+                        <button key={m} onClick={() => { setDate(new Date(localYear, i, 1)); setIsSelectorOpen(false); }} className={`w-full p-3 text-sm text-left rounded-xl transition-all ${month === i + 1 && year === localYear ? 'bg-blue-600 text-white font-bold' : 'text-gray-600 hover:bg-blue-50'}`}>{m}</button>
                       ))}
                     </div>
                   </div>
