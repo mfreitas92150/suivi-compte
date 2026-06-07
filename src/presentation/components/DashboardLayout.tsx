@@ -1,25 +1,26 @@
 'use client';
 
 import Link from 'next/link';
-import { LayoutDashboard, ReceiptText, Wallet, Settings, Menu, X, Plus, Target, Gauge } from 'lucide-react';
+import { LayoutDashboard, ReceiptText, Settings, Menu, X, Plus, Target, Gauge } from 'lucide-react';
 import { useState } from 'react';
 import { UserButton } from '@clerk/nextjs';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   
   const month = searchParams.get('month');
   const year = searchParams.get('year');
   const queryString = (month && year) ? `?month=${month}&year=${year}` : '';
 
   const navItems = [
-    { name: 'Tableau de bord', href: `/${queryString}`, icon: LayoutDashboard, disabled: true },
-    { name: 'Pilotage', href: `/pilotage${queryString}`, icon: Gauge },
-    { name: 'Enveloppes', href: `/envelopes${queryString}`, icon: Target, disabled: true },
-    { name: 'Transactions', href: `/transactions${queryString}`, icon: ReceiptText },
-    { name: 'Paramètres', href: '/config', icon: Settings },
+    { name: 'Tableau de bord', href: `/${queryString}`, basePath: '/', icon: LayoutDashboard, disabled: true },
+    { name: 'Pilotage', href: `/pilotage${queryString}`, basePath: '/pilotage', icon: Gauge },
+    { name: 'Enveloppes', href: `/envelopes${queryString}`, basePath: '/envelopes', icon: Target, disabled: true },
+    { name: 'Transactions', href: `/transactions${queryString}`, basePath: '/transactions', icon: ReceiptText },
+    { name: 'Paramètres', href: '/config', basePath: '/config', icon: Settings },
   ];
 
   return (
@@ -35,27 +36,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         
         <nav className="flex-1 px-4 space-y-4 mt-4">
-          {navItems.map((item) => (
-            <div key={item.name} className="relative group/item">
-              <Link
-                href={item.disabled ? '#' : item.href}
-                onClick={(e) => item.disabled && e.preventDefault()}
-                className={`flex items-center justify-center p-3 rounded-xl transition-all ${
-                  item.disabled 
-                    ? 'opacity-40 grayscale cursor-not-allowed text-gray-400' 
-                    : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'
-                }`}
-              >
-                <item.icon className="w-6 h-6 min-w-[24px]" />
-              </Link>
-              {!item.disabled && (
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg opacity-0 group-hover/item:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-[60] shadow-xl translate-x-[-10px] group-hover/item:translate-x-0">
-                  {item.name}
-                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-[6px] border-transparent border-r-gray-900" />
-                </div>
-              )}
-            </div>
-          ))}
+          {navItems.map((item) => {
+            const isActive = pathname === item.basePath;
+            return (
+              <div key={item.name} className="relative group/item">
+                <Link
+                  href={item.disabled ? '#' : item.href}
+                  onClick={(e) => item.disabled && e.preventDefault()}
+                  className={`flex items-center justify-center p-3 rounded-xl transition-all ${
+                    item.disabled 
+                      ? 'opacity-40 grayscale cursor-not-allowed text-gray-400' 
+                      : isActive
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                        : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'
+                  }`}
+                >
+                  <item.icon className="w-6 h-6 min-w-[24px]" />
+                </Link>
+                {!item.disabled && (
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg opacity-0 group-hover/item:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-[60] shadow-xl translate-x-[-10px] group-hover/item:translate-x-0">
+                    {item.name}
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-[6px] border-transparent border-r-gray-900" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="p-6 border-t flex items-center justify-center relative group/user">
@@ -79,28 +85,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-b absolute top-16 left-0 w-full z-50 p-4 space-y-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.disabled ? '#' : item.href}
-                onClick={(e) => {
-                  if (item.disabled) {
-                    e.preventDefault();
-                  } else {
-                    setIsMobileMenuOpen(false);
-                  }
-                }}
-                className={`flex items-center space-x-3 p-3 transition-all ${
-                  item.disabled 
-                    ? 'opacity-40 grayscale cursor-not-allowed text-gray-400' 
-                    : 'text-gray-700'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.name}</span>
-              </Link>
-            ))}
+          <div className="md:hidden bg-white border-b absolute top-16 left-0 w-full z-50 p-4 space-y-4 shadow-xl">
+            {navItems.map((item) => {
+              const isActive = pathname === item.basePath;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.disabled ? '#' : item.href}
+                  onClick={(e) => {
+                    if (item.disabled) {
+                      e.preventDefault();
+                    } else {
+                      setIsMobileMenuOpen(false);
+                    }
+                  }}
+                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                    item.disabled 
+                      ? 'opacity-40 grayscale cursor-not-allowed text-gray-400' 
+                      : isActive
+                        ? 'bg-blue-50 text-blue-600 font-bold'
+                        : 'text-gray-700'
+                  }`}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
           </div>
         )}
 
