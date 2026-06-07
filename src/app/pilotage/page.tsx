@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import DashboardLayout from "@/presentation/components/DashboardLayout";
-import { useCategories, useEnvelopes, useTransactions, useUpsertEnvelope, useAccounts, useUpdateAccount, useRecurringTransactions, useMonthlyItems, useCreateMonthlyItem, useUpdateMonthlyItem, useDeleteMonthlyItem, useInitializeMonth } from "@/presentation/hooks/useApi";
+import { useCategories, useEnvelopes, useTransactions, useAccounts, useUpdateAccount, useRecurringTransactions, useMonthlyItems, useCreateMonthlyItem, useUpdateMonthlyItem, useDeleteMonthlyItem, useInitializeMonth } from "@/presentation/hooks/useApi";
 import { Wallet, ChevronDown, Filter, CheckCircle2, Circle, TrendingUp, TrendingDown, Landmark, ReceiptText, Plus, Loader2, Trash2, RefreshCcw } from 'lucide-react';
 
 // --- Types ---
@@ -28,7 +28,6 @@ export default function PilotagePage() {
   const updateAccount = useUpdateAccount();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: envelopes, isLoading: envLoading } = useEnvelopes({ month, year });
-  const upsertEnvelope = useUpsertEnvelope();
   const { data: transactions, isLoading: transactionsLoading } = useTransactions({ month, year });
   const { data: recurringData, isLoading: recurringLoading } = useRecurringTransactions();
   
@@ -49,30 +48,6 @@ export default function PilotagePage() {
       await initializeMonth.mutateAsync({ month, year });
     } catch (err: any) {
       alert(err.response?.data?.error || "Erreur lors de l'initialisation");
-    }
-  };
-
-  const handleApplyTemplate = async () => {
-    if (!categories) return;
-    const expenseCats = categories.filter(c => c.type === 'EXPENSE' && c.defaultAmount !== null && c.defaultAmount !== undefined);
-    if (expenseCats.length === 0) {
-      alert("Aucun template n'est défini dans la configuration.");
-      return;
-    }
-
-    if (confirm(`Voulez-vous appliquer le template pour ${expenseCats.length} enveloppes ?`)) {
-      for (const cat of expenseCats) {
-        try {
-          await upsertEnvelope.mutateAsync({
-            categoryId: cat.id,
-            amount: cat.defaultAmount!,
-            month,
-            year
-          });
-        } catch (err) {
-          console.error(`Failed to apply template for category ${cat.name}:`, err);
-        }
-      }
     }
   };
 
@@ -193,10 +168,6 @@ export default function PilotagePage() {
       await deleteMonthlyItem.mutateAsync({ id, month, year });
     }
   };
-
-  const budgetAVentiler = totalFixedIncomes - totalFixedCharges;
-  const totalVentile = expenseCategories.reduce((acc, cat) => acc + (envelopes?.find(e => e.categoryId === cat.id)?.amount || 0), 0);
-  const restantApresVentilation = budgetAVentiler - totalVentile;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -449,67 +420,12 @@ export default function PilotagePage() {
                 <div className="flex items-center gap-2">
                   <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><Wallet className="w-4 h-4" /></div>
                   <h3 className="text-base font-bold text-gray-900 tracking-tight uppercase">Suivi Enveloppes</h3>
-                </div>
-                <button 
-                  onClick={handleApplyTemplate}
-                  disabled={upsertEnvelope.isPending}
-                  className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all flex items-center gap-2 disabled:opacity-50"
-                >
-                  {upsertEnvelope.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
-                  Template
-                </button>
-              </div>
+                  </div>
+                  </div>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-end border-b pb-2">
-                  <span className="text-[10px] font-black uppercase text-gray-600 tracking-widest">Préparation</span>
-                  <div className="text-right">
-                    <p className="text-[9px] font-bold text-gray-600 uppercase">A ventiler</p>
-                    <p className="text-sm font-black text-emerald-600">{budgetAVentiler.toLocaleString('fr-FR')} €</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                  {expenseCategories.map(cat => (
-                    <div key={cat.id} className="flex justify-between items-center text-xs border-b border-gray-100/50 pb-1">
-                      <span className="text-gray-700 font-medium truncate pr-1">{cat.name}</span>
-                      <div className="flex items-center gap-1">
-                        <input 
-                          type="number"
-                          key={`${cat.id}-${envelopes?.find(e => e.categoryId === cat.id)?.amount}`}
-                          className="w-16 text-right bg-transparent border-b border-transparent focus:border-indigo-400 focus:outline-none font-bold text-gray-900"
-                          defaultValue={envelopes?.find(e => e.categoryId === cat.id)?.amount || 0}
-                          onBlur={(e) => {
-                            const val = parseFloat(e.target.value);
-                            const current = envelopes?.find(e => e.categoryId === cat.id)?.amount || 0;
-                            console.log("PilotagePage.envelopeUpdate", { categoryId: cat.id, val, current });
-                            if (!isNaN(val) && val !== current) {
-                              upsertEnvelope.mutate({
-                                categoryId: cat.id,
-                                amount: val,
-                                month,
-                                year
-                              });
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                          }}
-                        />
-                        <span className="text-[10px] font-bold text-gray-400">€</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="p-2 bg-gray-50 rounded-xl flex justify-between items-center mt-2">
-                   <span className="text-[9px] font-black uppercase text-gray-600 tracking-widest">Reste après ventilation</span>
-                   <span className={`text-xs font-black ${restantApresVentilation < 0 ? 'text-rose-500' : 'text-gray-900'}`}>{restantApresVentilation.toLocaleString('fr-FR')} €</span>
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-4 border-t-2 border-dashed border-gray-100">
-                <div className="flex justify-between items-end border-b pb-2">
-                  <span className="text-[10px] font-black uppercase text-gray-600 tracking-widest">Restants</span>
-                  <div className="text-right">
+                  <div className="text-right ml-auto">
                     <p className="text-[9px] font-bold text-gray-600 uppercase">Dispo réel</p>
                     <p className="text-sm font-black text-blue-600">{resteAVivre.toLocaleString('fr-FR')} €</p>
                   </div>

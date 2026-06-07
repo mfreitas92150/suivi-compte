@@ -28,6 +28,7 @@ export default function TransactionsPage() {
   const updateTx = useUpdateTransaction();
 
   const [isAdding, setIsAdding] = useState(false);
+  const addFormRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -35,6 +36,28 @@ export default function TransactionsPage() {
     accountId: '',
     date: new Date().toISOString().split('T')[0]
   });
+
+  // Scroll to form when adding
+  useEffect(() => {
+    if (isAdding) {
+      // Small timeout to ensure the element is rendered and animation has started
+      const timer = setTimeout(() => {
+        addFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isAdding]);
+
+  // Handle Escape key to cancel adding
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isAdding) {
+        setIsAdding(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAdding]);
 
   // --- Date Selector Helpers ---
   const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -238,7 +261,7 @@ export default function TransactionsPage() {
         </div>
 
         {isAdding && (
-          <div className="bg-white p-8 rounded-[2rem] border-2 border-blue-100 shadow-xl animate-in slide-in-from-top-4 duration-300">
+          <div ref={addFormRef} className="bg-white p-8 rounded-[2rem] border-2 border-blue-100 shadow-xl animate-in slide-in-from-top-4 duration-300">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Plus className="w-6 h-6" /></div>
@@ -251,79 +274,90 @@ export default function TransactionsPage() {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Date</label>
-                <input 
-                  type="date" 
-                  className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm text-gray-900"
-                  value={formData.date}
-                  onChange={e => setFormData({...formData, date: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="space-y-1.5 md:col-span-1">
-                <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Désignation</label>
-                <input 
-                  type="text" 
-                  placeholder="Ex: Courses Carrefour" 
-                  className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm text-gray-900"
-                  value={formData.description}
-                  onChange={e => setFormData({...formData, description: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Catégorie</label>
-                <select 
-                  className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm appearance-none text-gray-900"
-                  value={formData.categoryId}
-                  onChange={e => setFormData({...formData, categoryId: e.target.value})}
-                  required
-                >
-                  <option value="">Sélectionner...</option>
-                  {expenseCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Compte</label>
-                <select 
-                  className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm appearance-none text-gray-900"
-                  value={formData.accountId}
-                  onChange={e => setFormData({...formData, accountId: e.target.value})}
-                  required
-                >
-                  <option value="">Sélectionner...</option>
-                  {accounts?.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Montant</label>
-                <div className="flex gap-2">
-                  <input 
-                    type="number" 
-                    step="0.01" 
-                    placeholder="0.00" 
-                    className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-black text-sm text-gray-900"
-                    value={formData.amount}
-                    onChange={e => setFormData({...formData, amount: e.target.value})}
-                    required
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={createTx.isPending}
-                    className="bg-blue-600 text-white px-6 rounded-2xl font-black uppercase hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-100"
-                  >
-                    {createTx.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : 'OK'}
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setIsAdding(false)}
-                    className="bg-gray-100 text-gray-500 px-4 rounded-2xl font-black uppercase text-[10px] hover:bg-gray-200 transition-all"
-                  >
-                    Annuler
-                  </button>
+            <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-1 space-y-6 w-full">
+                {/* Line 1: Date, Category, Account */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Date</label>
+                    <input 
+                      type="date" 
+                      className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm text-gray-900"
+                      value={formData.date}
+                      onChange={e => setFormData({...formData, date: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Catégorie</label>
+                    <select 
+                      className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm appearance-none text-gray-900"
+                      value={formData.categoryId}
+                      onChange={e => setFormData({...formData, categoryId: e.target.value})}
+                      required
+                    >
+                      <option value="">Sélectionner...</option>
+                      {expenseCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Compte</label>
+                    <select 
+                      className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm appearance-none text-gray-900"
+                      value={formData.accountId}
+                      onChange={e => setFormData({...formData, accountId: e.target.value})}
+                      required
+                    >
+                      <option value="">Sélectionner...</option>
+                      {accounts?.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                  </div>
                 </div>
+
+                {/* Line 2: Designation, Amount */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="space-y-1.5 md:col-span-3">
+                    <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Désignation</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ex: Courses Carrefour" 
+                      className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm text-gray-900"
+                      value={formData.description}
+                      onChange={e => setFormData({...formData, description: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5 md:col-span-1">
+                    <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Montant</label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="0.00" 
+                      className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-black text-sm text-gray-900"
+                      value={formData.amount}
+                      onChange={e => setFormData({...formData, amount: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button: Separated */}
+              <div className="w-full md:w-auto self-stretch flex items-end">
+                <button 
+                  type="submit" 
+                  disabled={createTx.isPending}
+                  className="w-full md:w-24 h-[calc(100%-24px)] bg-blue-600 text-white rounded-3xl font-black uppercase hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-100 flex flex-col items-center justify-center gap-2"
+                >
+                  {createTx.isPending ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-6 h-6" />
+                      <span className="text-[10px]">Valider</span>
+                    </>
+                  )}
+                </button>
               </div>
             </form>
           </div>
@@ -370,9 +404,16 @@ export default function TransactionsPage() {
                       <td className="px-8 py-5">
                         <button
                           onClick={() => handleToggleChecked(tx.id, tx.checked)}
-                          className={`p-1 rounded-full transition-all ${tx.checked ? 'text-emerald-500 bg-emerald-50' : 'text-gray-200 hover:text-blue-500 hover:bg-blue-50'}`}
+                          disabled={updateTx.isPending && updateTx.variables?.id === tx.id}
+                          className={`p-1 rounded-full transition-all disabled:opacity-50 ${tx.checked ? 'text-rose-600 bg-rose-50' : 'text-gray-200 hover:text-blue-500 hover:bg-blue-50'}`}
                         >
-                          {tx.checked ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                          {updateTx.isPending && updateTx.variables?.id === tx.id ? (
+                            <Loader2 className="w-5 h-5 animate-spin text-rose-600" />
+                          ) : tx.checked ? (
+                            <CheckCircle2 className="w-5 h-5" />
+                          ) : (
+                            <Circle className="w-5 h-5" />
+                          )}
                         </button>
                       </td>
                       <td className="px-8 py-5">
@@ -380,18 +421,18 @@ export default function TransactionsPage() {
                           <div className="p-2 bg-gray-50 text-gray-400 rounded-lg group-hover:bg-white transition-colors">
                             <Calendar className="w-3.5 h-3.5" />
                           </div>
-                          <span className="text-sm font-bold text-gray-600">
+                          <span className={`text-sm font-bold ${tx.checked ? 'text-gray-400' : 'text-gray-600'}`}>
                             {new Date(tx.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                           </span>
                         </div>
                       </td>
                       <td className="px-8 py-5">
-                        <p className="text-sm font-bold text-gray-700">{tx.description}</p>
+                        <p className={`text-sm font-bold ${tx.checked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{tx.description}</p>
                       </td>
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-2">
                           <Tag className="w-3.5 h-3.5 text-gray-300" />
-                          <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-[10px] font-black uppercase tracking-widest group-hover:bg-white transition-colors">
+                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest group-hover:bg-white transition-colors ${tx.checked ? 'bg-gray-50 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
                             {category?.name || 'Sans catégorie'}
                           </span>
                         </div>
@@ -399,10 +440,10 @@ export default function TransactionsPage() {
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-3.5 h-3.5 text-gray-300" />
-                          <span className="text-xs font-bold text-gray-600">{account?.name || 'Compte inconnu'}</span>
+                          <span className={`text-xs font-bold ${tx.checked ? 'text-gray-300' : 'text-gray-600'}`}>{account?.name || 'Compte inconnu'}</span>
                         </div>
                       </td>
-                      <td className={`px-8 py-5 text-right font-black text-base ${tx.amount < 0 ? 'text-gray-900' : 'text-emerald-600'}`}>
+                      <td className={`px-8 py-5 text-right font-black text-base ${tx.checked ? 'text-gray-300' : tx.amount < 0 ? 'text-gray-900' : 'text-emerald-600'}`}>
                         {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('fr-FR')} €
                       </td>
                       <td className="px-8 py-5 text-right">
