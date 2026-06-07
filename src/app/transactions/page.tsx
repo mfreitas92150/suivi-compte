@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import DashboardLayout from "@/presentation/components/DashboardLayout";
-import { useTransactions, useCategories, useAccounts, useCreateTransaction, useDeleteTransaction, useEnvelopes } from "@/presentation/hooks/useApi";
+import { useTransactions, useCategories, useAccounts, useCreateTransaction, useDeleteTransaction, useEnvelopes, useUpdateTransaction } from "@/presentation/hooks/useApi";
 import { 
   Plus, Search, ChevronDown, Calendar, Tag, CreditCard, 
-  Loader2, Trash2, X
+  Loader2, Trash2, X, CheckCircle2, Circle
 } from 'lucide-react';
 
 export default function TransactionsPage() {
@@ -25,6 +25,7 @@ export default function TransactionsPage() {
   const { data: envelopes } = useEnvelopes({ month, year });
   const createTx = useCreateTransaction();
   const deleteTx = useDeleteTransaction();
+  const updateTx = useUpdateTransaction();
 
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
@@ -71,17 +72,24 @@ export default function TransactionsPage() {
       .map(cat => {
         const env = envelopes.find(e => e.categoryId === cat.id);
         const budget = env?.amount || 0;
-        const spent = transactions
-          .filter(tx => tx.categoryId === cat.id)
+        const catTransactions = transactions.filter(tx => tx.categoryId === cat.id);
+        
+        const spentValidated = catTransactions
+          .filter(tx => tx.checked)
+          .reduce((acc, tx) => acc + Math.abs(tx.amount), 0);
+        const spentTotal = catTransactions
           .reduce((acc, tx) => acc + Math.abs(tx.amount), 0);
         
         return {
           id: cat.id,
           name: cat.name,
           budget,
-          spent,
-          remaining: budget - spent,
-          percent: budget > 0 ? (spent / budget) * 100 : 0
+          spentValidated,
+          spentTotal,
+          remainingReal: budget - spentValidated,
+          remainingTheo: budget - spentTotal,
+          percentValidated: budget > 0 ? (spentValidated / budget) * 100 : 0,
+          percentTotal: budget > 0 ? (spentTotal / budget) * 100 : 0
         };
       })
       .sort((a, b) => b.budget - a.budget);
@@ -100,7 +108,8 @@ export default function TransactionsPage() {
         categoryId: formData.categoryId,
         accountId: formData.accountId,
         date: new Date(formData.date),
-        isFixed: false
+        isFixed: false,
+        checked: false
       });
       setIsAdding(false);
       setFormData({ 
@@ -119,6 +128,10 @@ export default function TransactionsPage() {
     if (confirm("Supprimer cette transaction ?")) {
       await deleteTx.mutateAsync(id);
     }
+  };
+
+  const handleToggleChecked = async (txId: string, currentChecked: boolean) => {
+    await updateTx.mutateAsync({ id: txId, checked: !currentChecked });
   };
 
   return (
@@ -178,27 +191,40 @@ export default function TransactionsPage() {
             envelopesSummary.map((item) => (
               <div 
                 key={item.id} 
-                className={`${item.remaining < 0 ? 'bg-rose-50 border-rose-200 shadow-rose-100' : 'bg-white border-gray-100'} p-4 rounded-2xl border shadow-sm space-y-3 transition-all`}
+                className={`${item.remainingReal < 0 ? 'bg-rose-50 border-rose-200 shadow-rose-100' : 'bg-white border-gray-100'} p-4 rounded-2xl border shadow-sm space-y-3 transition-all`}
               >
                 <div className="flex justify-between items-start">
-                  <span className={`text-[10px] font-black uppercase tracking-widest truncate max-w-[150px] ${item.remaining < 0 ? 'text-rose-700' : 'text-gray-500'}`}>{item.name}</span>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${item.remaining < 0 ? 'bg-rose-600 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
-                    {item.remaining.toLocaleString('fr-FR')} €
-                  </span>
+                  <span className={`text-[10px] font-black uppercase tracking-widest truncate max-w-[120px] ${item.remainingReal < 0 ? 'text-rose-700' : 'text-gray-500'}`}>{item.name}</span>
+                  <div className="flex flex-col items-end">
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${item.remainingReal < 0 ? 'bg-rose-600 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
+                      {item.remainingReal.toLocaleString('fr-FR')} € <span className="text-[8px] opacity-80 uppercase ml-1">Réel</span>
+                    </span>
+                    {item.remainingReal !== item.remainingTheo && (
+                      <span className={`text-[9px] font-bold mt-1 ${item.remainingTheo < 0 ? 'text-rose-400' : 'text-gray-400'}`}>
+                        {item.remainingTheo.toLocaleString('fr-FR')} € <span className="text-[8px] opacity-80 uppercase">Théo.</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-lg font-black ${item.remaining < 0 ? 'text-rose-900' : 'text-gray-900'}`}>{item.spent.toLocaleString('fr-FR')} €</span>
-                    <span className={`text-[10px] font-bold ${item.remaining < 0 ? 'text-rose-400' : 'text-gray-400'}`}>/ {item.budget.toLocaleString('fr-FR')} €</span>
+                    <span className={`text-lg font-black ${item.remainingReal < 0 ? 'text-rose-900' : 'text-gray-900'}`}>{item.spentValidated.toLocaleString('fr-FR')} €</span>
+                    <span className={`text-[10px] font-bold ${item.remainingReal < 0 ? 'text-rose-400' : 'text-gray-400'}`}>/ {item.budget.toLocaleString('fr-FR')} €</span>
                   </div>
-                  <div className="mt-2 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="mt-2 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden relative">
+                    {/* Layer 1: Theoretical */}
                     <div 
-                      className={`h-full transition-all duration-500 rounded-full ${
-                        item.percent > 100 ? 'bg-rose-500' : 
-                        item.percent > 85 ? 'bg-amber-500' : 
-                        'bg-blue-600'
+                      className={`absolute inset-y-0 left-0 transition-all duration-500 rounded-full ${
+                        item.remainingTheo < 0 ? 'bg-rose-200' : 'bg-blue-200'
                       }`}
-                      style={{ width: `${Math.min(item.percent, 100)}%` }}
+                      style={{ width: `${Math.min(item.percentTotal, 100)}%` }}
+                    />
+                    {/* Layer 2: Validated */}
+                    <div 
+                      className={`absolute inset-y-0 left-0 transition-all duration-500 rounded-full ${
+                        item.remainingReal < 0 ? 'bg-rose-500' : 'bg-blue-600'
+                      }`}
+                      style={{ width: `${Math.min(item.percentValidated, 100)}%` }}
                     />
                   </div>
                 </div>
@@ -325,6 +351,7 @@ export default function TransactionsPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] border-b bg-white">
+                  <th className="px-8 py-5 w-10"></th>
                   <th className="px-8 py-5">Date</th>
                   <th className="px-8 py-5">Désignation</th>
                   <th className="px-8 py-5">Catégorie</th>
@@ -339,7 +366,15 @@ export default function TransactionsPage() {
                   const account = accounts?.find(a => a.id === tx.accountId);
                   
                   return (
-                    <tr key={tx.id} className="group hover:bg-blue-50/30 transition-colors">
+                    <tr key={tx.id} className={`group hover:bg-blue-50/30 transition-colors ${tx.checked ? 'opacity-60 bg-gray-50/30' : ''}`}>
+                      <td className="px-8 py-5">
+                        <button
+                          onClick={() => handleToggleChecked(tx.id, tx.checked)}
+                          className={`p-1 rounded-full transition-all ${tx.checked ? 'text-emerald-500 bg-emerald-50' : 'text-gray-200 hover:text-blue-500 hover:bg-blue-50'}`}
+                        >
+                          {tx.checked ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                        </button>
+                      </td>
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-gray-50 text-gray-400 rounded-lg group-hover:bg-white transition-colors">
@@ -384,7 +419,7 @@ export default function TransactionsPage() {
                 
                 {transactionsLoading && (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center">
+                    <td colSpan={7} className="py-20 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
                         <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest animate-pulse">Chargement des opérations...</p>
@@ -395,7 +430,7 @@ export default function TransactionsPage() {
                 
                 {!transactionsLoading && filteredTransactions.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center">
+                    <td colSpan={7} className="py-20 text-center">
                       <div className="flex flex-col items-center gap-2 text-gray-300">
                         <Search className="w-12 h-12 mb-2 opacity-20" />
                         <p className="text-sm font-bold">Aucune transaction trouvée</p>
