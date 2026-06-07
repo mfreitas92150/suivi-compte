@@ -156,7 +156,13 @@ export default function PilotagePage() {
   const years = [2026, 2025, 2024];
 
   const getSpentForCategory = (categoryId: string) => {
-    return transactions?.filter(tx => tx.categoryId === categoryId).reduce((acc, tx) => acc + Math.abs(tx.amount), 0) || 0;
+    const catTransactions = transactions?.filter(tx => tx.categoryId === categoryId) || [];
+    const spentValidated = catTransactions
+      .filter(tx => tx.checked)
+      .reduce((acc, tx) => acc + Math.abs(tx.amount), 0);
+    const spentTotal = catTransactions
+      .reduce((acc, tx) => acc + Math.abs(tx.amount), 0);
+    return { spentValidated, spentTotal };
   };
 
   const handleToggleCheck = async (id: string, checked: boolean) => {
@@ -513,20 +519,44 @@ export default function PilotagePage() {
                   {expenseCategories.map(cat => {
                       const env = envelopes?.find(e => e.categoryId === cat.id);
                       const budget = env?.amount || 0;
-                      const spent = getSpentForCategory(cat.id);
-                      const remaining = budget - spent;
-                      const percent = budget > 0 ? (spent / budget) * 100 : 0;
+                      const { spentValidated, spentTotal } = getSpentForCategory(cat.id);
+                      
+                      const remainingReal = budget - spentValidated;
+                      const remainingTheo = budget - spentTotal;
+                      const hasUpcoming = spentTotal > spentValidated;
+                      
+                      const percentValidated = budget > 0 ? (spentValidated / budget) * 100 : 0;
+                      const percentTotal = budget > 0 ? (spentTotal / budget) * 100 : 0;
+                      
+                      const isOverBudget = spentTotal > budget;
+                      const isValidatedOverBudget = spentValidated > budget;
                       
                       return (
                         <div key={cat.id} className="group">
-                          <div className="flex justify-between text-xs mb-1">
+                          <div className="flex justify-between items-end text-xs mb-1">
                             <span className="font-bold text-gray-700 group-hover:text-blue-600 transition-colors">{cat.name}</span>
-                            <span className={`font-black ${remaining < 0 ? 'text-red-500' : 'text-gray-900'}`}>
-                              {remaining.toLocaleString('fr-FR')} €
-                            </span>
+                            <div className="text-right">
+                              {hasUpcoming && (
+                                <p className="text-[9px] font-bold text-gray-400 leading-none mb-0.5">
+                                  Prévu: {remainingTheo.toLocaleString('fr-FR')} €
+                                </p>
+                              )}
+                              <p className={`font-black leading-none ${remainingReal < 0 ? 'text-red-500' : 'text-blue-600'}`}>
+                                {remainingReal.toLocaleString('fr-FR')} €
+                              </p>
+                            </div>
                           </div>
-                          <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                            <div className={`h-full transition-all duration-1000 ${remaining < 0 ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${Math.min(percent, 100)}%` }}></div>
+                          <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden relative">
+                            {/* Layer 1: Theoretical Spent */}
+                            <div 
+                              className={`absolute top-0 left-0 h-full transition-all duration-1000 ${isOverBudget ? 'bg-rose-200' : 'bg-blue-200'}`} 
+                              style={{ width: `${Math.min(percentTotal, 100)}%` }}
+                            ></div>
+                            {/* Layer 2: Validated Spent */}
+                            <div 
+                              className={`absolute top-0 left-0 h-full transition-all duration-1000 ${isValidatedOverBudget ? 'bg-rose-500' : 'bg-blue-500'}`} 
+                              style={{ width: `${Math.min(percentValidated, 100)}%` }}
+                            ></div>
                           </div>
                         </div>
                       );
