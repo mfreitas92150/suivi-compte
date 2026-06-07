@@ -49,12 +49,12 @@ export function MobileEntryForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center">
+      <div className="bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent focus-within:border-blue-500 transition-all text-center">
         <label className="text-xs font-black uppercase tracking-widest text-gray-400 block mb-2">Montant</label>
         <div className="relative inline-block">
           <input 
             type="number" step="0.01" placeholder="0.00" autoFocus
-            className="w-full text-center text-6xl font-black text-gray-900 outline-none placeholder-gray-100 bg-transparent"
+            className="w-full text-center text-6xl font-black text-gray-900 outline-none placeholder-gray-300 bg-transparent"
             value={formData.amount}
             onChange={e => setFormData({...formData, amount: e.target.value})}
             required
@@ -66,7 +66,7 @@ export function MobileEntryForm() {
       <div className="space-y-4">
         <input 
           type="text" placeholder="Quoi ? (ex: Courses)" 
-          className="w-full p-5 bg-white rounded-2xl border-none shadow-sm text-lg font-medium outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-5 bg-white rounded-2xl border-2 border-transparent shadow-sm text-lg font-bold text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-0"
           value={formData.description}
           onChange={e => setFormData({...formData, description: e.target.value})}
           required
@@ -102,24 +102,36 @@ export function MobileEntryForm() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between px-2 pt-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Transaction d&apos;hier ?</label>
-          <button
-            type="button"
-            onClick={() => {
-              const yesterday = new Date();
-              yesterday.setDate(yesterday.getDate() - 1);
-              const today = new Date();
-              const isYesterday = formData.date === yesterday.toISOString().split('T')[0];
-              setFormData({
-                ...formData,
-                date: isYesterday ? today.toISOString().split('T')[0] : yesterday.toISOString().split('T')[0]
-              });
-            }}
-            className={`w-12 h-6 rounded-full transition-colors relative ${formData.date !== new Date().toISOString().split('T')[0] ? 'bg-blue-600' : 'bg-gray-200'}`}
-          >
-            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.date !== new Date().toISOString().split('T')[0] ? 'left-7' : 'left-1'}`} />
-          </button>
+        <div className="space-y-2">
+          <label htmlFor="transaction-date" className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Date de l&apos;opération</label>
+          <div className="flex gap-2 mb-2">
+            <button
+              type="button"
+              onClick={() => setFormData({...formData, date: new Date().toISOString().split('T')[0]})}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${formData.date === new Date().toISOString().split('T')[0] ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-white text-gray-500 border border-gray-100'}`}
+            >
+              Aujourd&apos;hui
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                setFormData({...formData, date: yesterday.toISOString().split('T')[0]});
+              }}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${formData.date === new Date(Date.now() - 86400000).toISOString().split('T')[0] ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-white text-gray-500 border border-gray-100'}`}
+            >
+              Hier
+            </button>
+          </div>
+          <input 
+            id="transaction-date"
+            type="date" 
+            className="w-full p-4 bg-white rounded-2xl border-none shadow-sm text-base font-bold text-gray-900 outline-none focus:ring-2 focus:ring-blue-500"
+            value={formData.date}
+            onChange={e => setFormData({...formData, date: e.target.value})}
+            required
+          />
         </div>
       </div>
 

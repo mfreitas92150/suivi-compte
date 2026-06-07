@@ -77,18 +77,25 @@ describe('MobileEntryForm', () => {
     expect(screen.getByText("C'est noté !")).toBeInTheDocument();
   });
 
-  it('toggles yesterday date', async () => {
+  it('allows changing date via shortcuts and date input', async () => {
     render(<MobileEntryForm />);
     
-    const yesterdayToggle = screen.getByText("Transaction d'hier ?").nextElementSibling;
-    expect(yesterdayToggle).toBeInTheDocument();
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const dateInput = screen.getByLabelText("Date de l'opération") as HTMLInputElement;
     
-    fireEvent.click(yesterdayToggle!);
+    expect(dateInput.value).toBe(today);
     
-    // Check if toggle changed color (it should have bg-blue-600 when active)
-    expect(yesterdayToggle).toHaveClass('bg-blue-600');
+    const yesterdayBtn = screen.getByText("Hier");
+    fireEvent.click(yesterdayBtn);
+    expect(dateInput.value).toBe(yesterday);
     
-    fireEvent.click(yesterdayToggle!);
-    expect(yesterdayToggle).toHaveClass('bg-gray-200');
+    const todayBtn = screen.getByText("Aujourd'hui");
+    fireEvent.click(todayBtn);
+    expect(dateInput.value).toBe(today);
+
+    // Manual change
+    fireEvent.change(dateInput, { target: { value: '2026-06-01' } });
+    expect(dateInput.value).toBe('2026-06-01');
   });
 });
