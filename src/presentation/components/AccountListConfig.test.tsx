@@ -75,7 +75,7 @@ describe('AccountListConfig', () => {
     const select = screen.getByRole('combobox')
     fireEvent.change(select, { target: { value: 'SAVINGS' } })
     
-    fireEvent.click(screen.getByText('Valider'))
+    fireEvent.click(screen.getByText('Confirmer la création'))
     
     expect(onCreateMock).toHaveBeenCalledWith({
       name: 'Nouveau Compte',
