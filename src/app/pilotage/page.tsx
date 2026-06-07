@@ -227,7 +227,7 @@ export default function PilotagePage() {
             <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
             <div className="text-center space-y-1">
               <p className="text-lg font-black uppercase tracking-tight text-gray-900">Chargement des données</p>
-              <p className="text-gray-500 text-xs font-bold uppercase tracking-widest animate-pulse">Synchronisation avec le NAS...</p>
+              <p className="text-gray-500 text-xs font-bold uppercase tracking-widest animate-pulse">Synchronisation des données...</p>
             </div>
           </div>
         ) : !isInitialized ? (

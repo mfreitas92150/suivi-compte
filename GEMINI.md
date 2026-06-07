@@ -1,6 +1,6 @@
 # SuiviCompte - Instructions & Architecture
 
-Application de suivi de budget partagée pour couple, conçue pour remplacer un fichier Excel complexe. L'application privilégie la confidentialité (hébergement local sur NAS) et la simplicité d'usage hybride (PC/Mobile).
+Application de suivi de budget partagée pour couple, conçue pour remplacer un fichier Excel complexe. L'application est déployée sur Vercel avec une base de données Turso pour la simplicité d'usage hybride (PC/Mobile).
 
 ## Architecture du Projet
 
