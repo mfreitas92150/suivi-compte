@@ -269,8 +269,38 @@ export default function TransactionsPage() {
           </button>
         </div>
 
-        {/* SUMMARY CARDS (ENVELOPES RECAP) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {/* SUMMARY LIST (ENVELOPES RECAP) — vue splitée / demi-écran : un seul bloc, une ligne par libellé */}
+        <div className="lg:hidden bg-white rounded-2xl border shadow-sm overflow-hidden">
+          {envelopesSummary.length > 0 ? (
+            <>
+              <div className="flex items-center px-4 py-2.5 bg-gray-50/50 border-b text-[9px] font-black uppercase tracking-widest text-gray-400">
+                <span className="flex-1">Enveloppe</span>
+                <span className="w-24 text-right">Théo.</span>
+                <span className="w-24 text-right">Réel</span>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {envelopesSummary.map((item) => (
+                  <div key={item.id} className={`flex items-center px-4 py-2.5 ${item.remainingReal < 0 ? 'bg-rose-50/50' : ''}`}>
+                    <span className={`flex-1 text-xs font-black uppercase tracking-wide truncate ${item.remainingReal < 0 ? 'text-rose-700' : 'text-gray-600'}`}>{item.name}</span>
+                    <span className={`w-24 text-right text-xs font-bold ${item.remainingTheo < 0 ? 'text-rose-400' : 'text-gray-400'}`}>
+                      {item.remainingTheo.toLocaleString('fr-FR')} €
+                    </span>
+                    <span className={`w-24 text-right text-sm font-black ${item.remainingReal < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      {item.remainingReal.toLocaleString('fr-FR')} €
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="p-6 text-center">
+              <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Aucune enveloppe définie pour ce mois</p>
+            </div>
+          )}
+        </div>
+
+        {/* SUMMARY CARDS (ENVELOPES RECAP) — grand écran */}
+        <div className="hidden lg:grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {envelopesSummary.length > 0 ? (
             envelopesSummary.map((item) => (
               <div 
