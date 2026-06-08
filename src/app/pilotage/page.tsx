@@ -362,6 +362,7 @@ export default function PilotagePage() {
               <Checklist 
                 items={fixedIncomes} 
                 onToggle={(id, checked) => handleToggleCheck(id, checked)} 
+                onUpdateAmount={(id, val) => handleUpdateAmount(id, val)}
                 accentColor="blue" 
                 updatingId={updateMonthlyItem.isPending ? updateMonthlyItem.variables?.id : null}
               />
@@ -420,6 +421,7 @@ export default function PilotagePage() {
                           <Checklist 
                             items={groupItems} 
                             onToggle={(id, checked) => handleToggleCheck(id, checked)} 
+                            onUpdateAmount={(id, val) => handleUpdateAmount(id, val)}
                             accentColor="rose" 
                             updatingId={updateMonthlyItem.isPending ? updateMonthlyItem.variables?.id : null}
                           />
@@ -577,11 +579,11 @@ function Checklist({ items, onToggle, onUpdateAmount, onUpdateLabel, onDelete, a
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [editingLabel?.id, editingLabel?.value, onUpdateLabel, items]);
+  }, [editingLabel, onUpdateLabel, items]);
 
   if (items.length === 0) return <p className="text-center py-4 text-gray-300 italic text-[10px]">{emptyMessage}</p>;
   
-  const colors: any = { blue: 'text-blue-600', emerald: 'text-emerald-600', rose: 'text-rose-600' };
+  const colors: Record<string, string> = { blue: 'text-blue-600', emerald: 'text-emerald-600', rose: 'text-rose-600' };
 
   return (
     <div className="space-y-1">
@@ -615,11 +617,20 @@ function Checklist({ items, onToggle, onUpdateAmount, onUpdateLabel, onDelete, a
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <div className="flex items-center gap-1">
-              {isEditableLabel && !item.checked ? (
+              {onUpdateAmount && !item.checked ? (
                 <input
                   type="number"
+                  key={item.amount}
                   defaultValue={item.amount}
-                  onBlur={(e) => onUpdateAmount?.(item.id, parseFloat(e.target.value))}
+                  onBlur={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val) && val !== item.amount) {
+                      onUpdateAmount?.(item.id, val);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                  }}
                   className="w-16 text-right bg-transparent border-b border-transparent focus:border-blue-300 focus:outline-none font-black text-[11px] text-gray-900"
                 />
               ) : (
