@@ -19,7 +19,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     { name: 'Tableau de bord', href: `/${queryString}`, basePath: '/', icon: LayoutDashboard, disabled: true },
     { name: 'Pilotage', href: `/pilotage${queryString}`, basePath: '/pilotage', icon: Gauge },
-    { name: 'Enveloppes', href: `/envelopes${queryString}`, basePath: '/envelopes', icon: Target, disabled: true },
     { name: 'Transactions', href: `/transactions${queryString}`, basePath: '/transactions', icon: ReceiptText },
     { name: 'Statistiques', href: `/stats${yearOnlyString}`, basePath: '/stats', icon: BarChart2 },
     { name: 'Paramètres', href: '/config', basePath: '/config', icon: Settings },
