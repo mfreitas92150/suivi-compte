@@ -173,29 +173,3 @@ export default function StatsPage() {
     </DashboardLayout>
   );
 }
-/}
-                  {chartData.map((_, index) => {
-                    if (index % 2 === 0) {
-                      return (
-                        <ReferenceArea 
-                          key={`ref-${index}`} 
-                          x1={chartData[index].name} 
-                          x2={index < chartData.length - 1 ? chartData[index + 1].name : undefined}
-                          fill="#f3f4f6" 
-                          fillOpacity={1} 
-                        />
-                      );
-                    }
-                    return null;
-                  })}
-                  <Bar dataKey="Revenus" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                  <Bar dataKey="Dépenses" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-      </div>
-    </DashboardLayout>
-  );
-}
