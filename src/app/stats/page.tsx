@@ -17,6 +17,15 @@ import { Calendar, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Scale } 
 
 const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
 
+const formatCurrency = (value: number) => {
+  return value.toLocaleString('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 export default function StatsPage() {
   const { year: urlYear, setMonthAndYear } = useMonthNavigation();
 
@@ -73,7 +82,7 @@ export default function StatsPage() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-1">Total Revenus</p>
-                <h3 className="text-2xl font-bold text-green-600">{totalIncome.toFixed(2)} €</h3>
+                <h3 className="text-2xl font-bold text-green-600">{formatCurrency(totalIncome)}</h3>
               </div>
               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
                 <TrendingUp className="w-5 h-5" />
@@ -85,7 +94,7 @@ export default function StatsPage() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-1">Total Dépenses</p>
-                <h3 className="text-2xl font-bold text-red-600">{totalExpense.toFixed(2)} €</h3>
+                <h3 className="text-2xl font-bold text-red-600">{formatCurrency(totalExpense)}</h3>
               </div>
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
                 <TrendingDown className="w-5 h-5" />
@@ -98,7 +107,7 @@ export default function StatsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-1">Bilan</p>
                 <h3 className={`text-2xl font-bold ${balance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-                  {balance > 0 ? '+' : ''}{balance.toFixed(2)} €
+                  {balance > 0 ? '+' : ''}{formatCurrency(balance)}
                 </h3>
               </div>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${balance >= 0 ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'}`}>
@@ -139,12 +148,14 @@ export default function StatsPage() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#6b7280', fontSize: 12 }}
-                    tickFormatter={(value) => `${value} €`}
+                    tickFormatter={(value) => formatCurrency(value)}
                     dx={-10}
+                    width={80}
                   />
                   <Tooltip 
                     cursor={{ fill: '#f9fafb' }}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value: any) => formatCurrency(Number(value))}
                   />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Bar dataKey="Revenus" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
