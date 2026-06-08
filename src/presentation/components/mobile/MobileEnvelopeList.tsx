@@ -25,13 +25,19 @@ export function MobileEnvelopeList() {
   const totalRemaining = totalBudget - totalSpent;
 
   return (
-    <div className="space-y-4">
-      <div className="p-6 bg-gray-900 rounded-3xl text-white shadow-xl mb-6">
-        <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">Reste à dépenser</p>
-        <h2 className="text-3xl font-black">{totalRemaining.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</h2>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center px-2">
+        <h2 className="text-2xl font-black text-gray-900">Enveloppes</h2>
       </div>
 
-      {expenseCategories.map(cat => {
+      <div className="p-8 bg-gray-900 rounded-[2.5rem] text-white shadow-2xl shadow-gray-200 relative overflow-hidden mb-2">
+        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-3xl" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 mb-2">Reste à dépenser</p>
+        <h2 className="text-4xl font-black">{totalRemaining.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</h2>
+      </div>
+
+      <div className="space-y-3">
+        {expenseCategories.map(cat => {
         const budget = envelopes?.find(e => e.categoryId === cat.id)?.amount || 0;
         const spent = getSpent(cat.id);
         const remaining = budget - spent;
@@ -58,6 +64,7 @@ export function MobileEnvelopeList() {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

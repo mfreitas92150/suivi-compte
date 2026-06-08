@@ -1,21 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { MobileEntryForm } from '@/presentation/components/mobile/MobileEntryForm';
 import { MobileEnvelopeList } from '@/presentation/components/mobile/MobileEnvelopeList';
-import { MobileNavigation } from '@/presentation/components/mobile/MobileNavigation';
+import { MobileNavigation, MobileTab } from '@/presentation/components/mobile/MobileNavigation';
+import { MobileDashboard } from '@/presentation/components/mobile/MobileDashboard';
+import { MobileTransactionList } from '@/presentation/components/mobile/MobileTransactionList';
 
 export default function MobileOverview() {
-  const [activeTab, setActiveTab] = useState<'saisie' | 'enveloppes'>('saisie');
+  const [activeTab, setActiveTab] = useState<MobileTab>('dashboard');
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <main className="p-4">
-        {activeTab === 'saisie' ? (
-          <MobileEntryForm />
-        ) : (
-          <MobileEnvelopeList />
-        )}
+        {activeTab === 'dashboard' && <MobileDashboard />}
+        {activeTab === 'enveloppes' && <MobileEnvelopeList />}
+        {activeTab === 'transactions' && <MobileTransactionList />}
       </main>
       <MobileNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>

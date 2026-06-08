@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAccounts, useCategories, useCreateTransaction } from "@/presentation/hooks/useApi";
 import { CheckCircle2 } from 'lucide-react';
 
-export function MobileEntryForm() {
+export function MobileEntryForm({ onSuccess }: { onSuccess?: () => void }) {
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const createTx = useCreateTransaction();
@@ -33,7 +33,10 @@ export function MobileEntryForm() {
     });
     setIsSuccess(true);
     setFormData({ ...formData, amount: '', description: '' });
-    setTimeout(() => setIsSuccess(false), 2000);
+    setTimeout(() => {
+      setIsSuccess(false);
+      if (onSuccess) onSuccess();
+    }, 2000);
   };
 
   if (isSuccess) {
