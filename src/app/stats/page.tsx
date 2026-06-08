@@ -140,8 +140,8 @@ export default function StatsPage() {
                     strokeDasharray="3 3" 
                     vertical={false} 
                     stroke="#f0f0f0" 
-                    verticalFill={['#f9fafb', 'transparent']} 
-                    fillOpacity={0.5}
+                    verticalFill={['#f3f4f6', 'transparent']} 
+                    fillOpacity={1}
                   />
                   <XAxis 
                     dataKey="name" 
