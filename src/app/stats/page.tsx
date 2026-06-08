@@ -11,7 +11,6 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  ReferenceArea,
   Legend
 } from 'recharts';
 import { Calendar, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Scale } from 'lucide-react';
@@ -163,7 +162,18 @@ export default function StatsPage() {
                     formatter={(value: any) => formatCurrency(Number(value))}
                   />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  {/* Alternating backgrounds */}
+                  <Bar dataKey="Revenus" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                  <Bar dataKey="Dépenses" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
+/}
                   {chartData.map((_, index) => {
                     if (index % 2 === 0) {
                       return (
