@@ -56,6 +56,8 @@ export default function RecurringListConfig({
     }
   };
 
+  const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
@@ -64,6 +66,9 @@ export default function RecurringListConfig({
             {type === 'INCOME' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
           </div>
           {title}
+          <span className={`ml-2 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${type === 'INCOME' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+            Total : {totalAmount.toLocaleString('fr-FR')} €
+          </span>
         </h3>
         {!isAdding && (
           <button 
