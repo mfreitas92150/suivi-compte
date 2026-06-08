@@ -211,7 +211,7 @@ export default function TransactionsPage() {
       <div className="max-w-[1600px] mx-auto space-y-6 pb-10 px-4">
         
         {/* HEADER & DATE SELECTOR */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap gap-4 justify-between items-center">
           <div className="relative" ref={selectorRef}>
             <button 
               onClick={() => { setIsSelectorOpen(!isSelectorOpen); setLocalYear(year); }}
@@ -262,7 +262,7 @@ export default function TransactionsPage() {
 
           <button
             onClick={() => { if (isAdding || editingId) { closeForm(); } else { setIsAdding(true); } }}
-            className={`${(isAdding || editingId) ? 'bg-gray-100 text-gray-500' : 'bg-blue-600 text-white'} px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:opacity-80 transition-all shadow-lg`}
+            className={`${(isAdding || editingId) ? 'bg-gray-100 text-gray-500' : 'bg-blue-600 text-white'} shrink-0 px-4 lg:px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:opacity-80 transition-all shadow-lg`}
           >
             {(isAdding || editingId) ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             {(isAdding || editingId) ? 'Annuler' : 'Nouvelle opération'}
@@ -446,17 +446,95 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* CARD VIEW (mobile / demi-écran) */}
+          <div className="lg:hidden divide-y divide-gray-50">
+            {filteredTransactions.map((tx) => {
+              const category = categories?.find(c => c.id === tx.categoryId);
+              const account = accounts?.find(a => a.id === tx.accountId);
+
+              return (
+                <div key={tx.id} className={`p-4 transition-colors ${tx.checked ? 'opacity-60 bg-gray-50/30' : ''}`}>
+                  {/* Ligne 1 : check + désignation + montant */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleToggleChecked(tx.id, tx.checked)}
+                      disabled={updateTx.isPending && updateTx.variables?.id === tx.id}
+                      className={`shrink-0 p-1 rounded-full transition-all disabled:opacity-50 ${tx.checked ? 'text-rose-600 bg-rose-50' : 'text-gray-300 hover:text-blue-500 hover:bg-blue-50'}`}
+                    >
+                      {updateTx.isPending && updateTx.variables?.id === tx.id ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-rose-600" />
+                      ) : tx.checked ? (
+                        <CheckCircle2 className="w-5 h-5" />
+                      ) : (
+                        <Circle className="w-5 h-5" />
+                      )}
+                    </button>
+                    <p className={`flex-1 text-sm font-bold truncate ${tx.checked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{tx.description}</p>
+                    <span className={`shrink-0 font-black text-base ${tx.checked ? 'text-gray-300' : tx.amount < 0 ? 'text-gray-900' : 'text-emerald-600'}`}>
+                      {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('fr-FR')} €
+                    </span>
+                  </div>
+
+                  {/* Ligne 2 : date · catégorie · compte + actions */}
+                  <div className="flex items-center gap-2 mt-2 pl-9">
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-gray-500">
+                      <Calendar className="w-3.5 h-3.5 text-gray-300" />
+                      {new Date(tx.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide truncate ${tx.checked ? 'bg-gray-50 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                      {category?.name || 'Sans catégorie'}
+                    </span>
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-gray-400 truncate">
+                      <CreditCard className="w-3.5 h-3.5 text-gray-300" />
+                      {account?.name || 'Compte inconnu'}
+                    </span>
+                    <div className="ml-auto flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => handleEdit(tx)}
+                        className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(tx.id)}
+                        className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {transactionsLoading && (
+              <div className="py-20 flex flex-col items-center gap-3">
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest animate-pulse">Chargement des opérations...</p>
+              </div>
+            )}
+
+            {!transactionsLoading && filteredTransactions.length === 0 && (
+              <div className="py-20 flex flex-col items-center gap-2 text-gray-300">
+                <Search className="w-12 h-12 mb-2 opacity-20" />
+                <p className="text-sm font-bold">Aucune transaction trouvée</p>
+                <p className="text-[10px] font-black uppercase tracking-widest">Essayez de modifier vos filtres ou la période</p>
+              </div>
+            )}
+          </div>
+
+          {/* TABLE VIEW (grand écran) */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] border-b bg-white">
-                  <th className="px-8 py-5 w-10"></th>
-                  <th className="px-8 py-5">Date</th>
-                  <th className="px-8 py-5">Désignation</th>
-                  <th className="px-8 py-5">Catégorie</th>
-                  <th className="px-8 py-5">Compte</th>
-                  <th className="px-8 py-5 text-right">Montant</th>
-                  <th className="px-8 py-5 text-right w-10"></th>
+                  <th className="px-4 lg:px-8 py-4 lg:py-5 w-10"></th>
+                  <th className="px-4 lg:px-8 py-4 lg:py-5">Date</th>
+                  <th className="px-4 lg:px-8 py-4 lg:py-5">Désignation</th>
+                  <th className="px-4 lg:px-8 py-4 lg:py-5">Catégorie</th>
+                  <th className="px-4 lg:px-8 py-4 lg:py-5">Compte</th>
+                  <th className="px-4 lg:px-8 py-4 lg:py-5 text-right">Montant</th>
+                  <th className="px-4 lg:px-8 py-4 lg:py-5 text-right w-10"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -466,7 +544,7 @@ export default function TransactionsPage() {
                   
                   return (
                     <tr key={tx.id} className={`group hover:bg-blue-50/30 transition-colors ${tx.checked ? 'opacity-60 bg-gray-50/30' : ''}`}>
-                      <td className="px-8 py-5">
+                      <td className="px-4 lg:px-8 py-4 lg:py-5">
                         <button
                           onClick={() => handleToggleChecked(tx.id, tx.checked)}
                           disabled={updateTx.isPending && updateTx.variables?.id === tx.id}
@@ -481,7 +559,7 @@ export default function TransactionsPage() {
                           )}
                         </button>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-4 lg:px-8 py-4 lg:py-5">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-gray-50 text-gray-400 rounded-lg group-hover:bg-white transition-colors">
                             <Calendar className="w-3.5 h-3.5" />
@@ -491,10 +569,10 @@ export default function TransactionsPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-4 lg:px-8 py-4 lg:py-5">
                         <p className={`text-sm font-bold ${tx.checked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{tx.description}</p>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-4 lg:px-8 py-4 lg:py-5">
                         <div className="flex items-center gap-2">
                           <Tag className="w-3.5 h-3.5 text-gray-300" />
                           <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest group-hover:bg-white transition-colors ${tx.checked ? 'bg-gray-50 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
@@ -502,26 +580,26 @@ export default function TransactionsPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-4 lg:px-8 py-4 lg:py-5">
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-3.5 h-3.5 text-gray-300" />
                           <span className={`text-xs font-bold ${tx.checked ? 'text-gray-300' : 'text-gray-600'}`}>{account?.name || 'Compte inconnu'}</span>
                         </div>
                       </td>
-                      <td className={`px-8 py-5 text-right font-black text-base ${tx.checked ? 'text-gray-300' : tx.amount < 0 ? 'text-gray-900' : 'text-emerald-600'}`}>
+                      <td className={`px-4 lg:px-8 py-4 lg:py-5 text-right font-black text-base ${tx.checked ? 'text-gray-300' : tx.amount < 0 ? 'text-gray-900' : 'text-emerald-600'}`}>
                         {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('fr-FR')} €
                       </td>
-                      <td className="px-8 py-5 text-right">
+                      <td className="px-4 lg:px-8 py-4 lg:py-5 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleEdit(tx)}
-                            className="p-2 text-gray-200 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                            className="p-2 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(tx.id)}
-                            className="p-2 text-gray-200 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                            className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

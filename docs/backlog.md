@@ -57,6 +57,18 @@ Ce document recense les idées d'amélioration et les nouvelles fonctionnalités
     - La navigation entre les pages est visuellement cohérente.
     - Les données importantes sont identifiables en un coup d'œil.
 
+### 5. Affichage conditionnel des décimales
+- **Objectif** : Améliorer la lisibilité des montants en n'affichant les 2 chiffres après la virgule que lorsque c'est nécessaire.
+- **Détails Fonctionnels** : Forcer l'affichage de 2 chiffres après la virgule uniquement s'il y a au moins un chiffre décimal non nul. Un montant entier (ex: `1500 €`) s'affiche sans décimales ; un montant avec décimales (ex: `1500,50 €`) s'affiche avec 2 chiffres.
+- **Détails Techniques** :
+    - Localiser la fonction de formatage des montants (ex: `Intl.NumberFormat` ou helper de formatage monétaire).
+    - Détecter si la partie décimale est nulle pour choisir entre `minimumFractionDigits: 0` et `minimumFractionDigits: 2`.
+    - Appliquer de manière cohérente sur toutes les vues (transactions, pilotage, dashboard).
+- **Critères d'Acceptation** :
+    - Un montant entier s'affiche sans `,00`.
+    - Un montant avec décimales s'affiche avec exactement 2 chiffres après la virgule.
+    - Le comportement est uniforme dans toute l'application.
+
 ## Pilotage & Budgétisation
 
 ### 1. Affichage du total des revenus exceptionnels
@@ -69,6 +81,21 @@ Ce document recense les idées d'amélioration et les nouvelles fonctionnalités
 - **Critères d'Acceptation** :
     - Le total est affiché clairement dans la section Pilotage.
     - Le calcul est mis à jour dynamiquement lors de l'ajout/suppression d'un revenu exceptionnel.
+
+### 2. Modification du plafond des enveloppes par mois
+- **Objectif** : Permettre d'ajuster le budget (plafond) d'une enveloppe pour un mois donné, sans impacter les autres mois.
+- **Détails Fonctionnels** :
+    - Rendre le plafond de chaque enveloppe éditable directement depuis l'affichage des enveloppes (cartes récap sur la page Transactions et/ou page Pilotage).
+    - Le montant saisi ne s'applique qu'au mois/année sélectionné.
+    - Si aucune enveloppe n'existe encore pour ce mois, la créer à la volée lors de la première saisie.
+- **Détails Techniques** :
+    - Une enveloppe (`Envelope`) est déjà rattachée à un mois/année et une catégorie ; exposer un Use Case `UpdateEnvelopeUseCase` (ou upsert) pour modifier `amount`.
+    - Ajouter une route API `PATCH /api/envelopes/[id]` (ou upsert par categoryId + mois/année).
+    - Côté front, ajouter un input/édition inline sur la carte enveloppe et invalider la requête `useEnvelopes` après mutation.
+- **Critères d'Acceptation** :
+    - L'utilisateur peut modifier le plafond d'une enveloppe pour un mois précis.
+    - La modification est persistée et n'affecte pas les autres mois.
+    - Les calculs (restant réel/théorique, barres de progression) se mettent à jour immédiatement.
 
 ---
 *Note : Pour chaque idée majeure, une tâche détaillée (task-XXX.md) devrait être créée lors de la phase de conception.*
