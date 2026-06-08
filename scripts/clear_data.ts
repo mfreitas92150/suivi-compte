@@ -14,7 +14,7 @@ async function main() {
         await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "${table}"`);
         console.log(`- Dropped table ${table}`);
       } catch (e) {
-        console.warn(`- Could not drop ${table}:`, e.message);
+        console.warn(`- Could not drop ${table}:`, e instanceof Error ? e.message : e);
       }
     }
 
