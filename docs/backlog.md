@@ -42,5 +42,18 @@ Ce document recense les idées d'amélioration et les nouvelles fonctionnalités
     - La navigation entre les pages est visuellement cohérente.
     - Les données importantes sont identifiables en un coup d'œil.
 
+## Pilotage & Budgétisation
+
+### 1. Affichage du total des revenus exceptionnels
+- **Objectif** : Améliorer la visibilité des rentrées d'argent non planifiées (remboursements santé, CAF, aides ponctuelles) dans le tableau de bord mensuel.
+- **Détails Fonctionnels** : Ajouter un indicateur (ex: badge ou ligne de total) dans le bloc des revenus de la page Pilotage qui affiche la somme de tous les revenus qui ne sont pas des revenus fixes (salaires).
+- **Détails Techniques** :
+    - Filtrer les `MonthlyItem` de type `INCOME`.
+    - Distinguer les revenus liés à un `recurringId` (fixes) des autres (exceptionnels).
+    - Calculer et afficher la somme des montants exceptionnels.
+- **Critères d'Acceptation** :
+    - Le total est affiché clairement dans la section Pilotage.
+    - Le calcul est mis à jour dynamiquement lors de l'ajout/suppression d'un revenu exceptionnel.
+
 ---
 *Note : Pour chaque idée majeure, une tâche détaillée (task-XXX.md) devrait être créée lors de la phase de conception.*
