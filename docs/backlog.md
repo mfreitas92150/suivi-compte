@@ -27,7 +27,22 @@ Ce document recense les idées d'amélioration et les nouvelles fonctionnalités
     - L'onglet du navigateur affiche la nouvelle icône.
     - L'icône est nette sur les différents types d'écrans (Retina/High DPI).
 
-### 3. Refonte visuelle et ergonomique globale (UI/UX Overhaul)
+### 3. Modification d'une transaction
+- **Objectif** : Permettre à l'utilisateur de corriger une erreur sur une transaction existante (montant, date, catégorie, compte) sans avoir à la supprimer et la recréer.
+- **Détails Fonctionnels** : 
+    - Ajouter un bouton "Modifier" (icône crayon) sur chaque ligne de transaction.
+    - Ouvrir un formulaire pré-rempli avec les données actuelles de la transaction.
+    - Valider les modifications et mettre à jour l'affichage.
+- **Détails Techniques** :
+    - Créer un nouvel Use Case `UpdateTransactionUseCase`.
+    - Ajouter une route API `PATCH /api/transactions/[id]`.
+    - Réutiliser le composant `MobileEntryForm` ou créer un modal d'édition.
+- **Critères d'Acceptation** :
+    - L'utilisateur peut modifier n'importe quel champ d'une transaction.
+    - La modification est persistée en base de données.
+    - Le solde des comptes et les enveloppes se mettent à jour en conséquence.
+
+### 4. Refonte visuelle et ergonomique globale (UI/UX Overhaul)
 - **Objectif** : Améliorer la lisibilité, l'esthétique et l'expérience utilisateur globale de l'application.
 - **Détails Fonctionnels** : 
     - Revoir la typographie (choix de polices plus modernes et lisibles).

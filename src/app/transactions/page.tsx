@@ -4,9 +4,9 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import DashboardLayout from "@/presentation/components/DashboardLayout";
 import { useTransactions, useCategories, useAccounts, useCreateTransaction, useDeleteTransaction, useEnvelopes, useUpdateTransaction } from "@/presentation/hooks/useApi";
 import { useMonthNavigation } from "@/presentation/hooks/useMonthNavigation";
-import { 
-  Plus, Search, ChevronDown, Calendar, Tag, CreditCard, 
-  Loader2, Trash2, X, CheckCircle2, Circle
+import {
+  Plus, Search, ChevronDown, Calendar, Tag, CreditCard,
+  Loader2, Trash2, X, CheckCircle2, Circle, Pencil
 } from 'lucide-react';
 
 export default function TransactionsPage() {
@@ -48,6 +48,7 @@ export default function TransactionsPage() {
   const updateTx = useUpdateTransaction();
 
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const addFormRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     description: '',
@@ -57,27 +58,27 @@ export default function TransactionsPage() {
     date: new Date().toISOString().split('T')[0]
   });
 
-  // Scroll to form when adding
+  // Scroll to form when adding or editing
   useEffect(() => {
-    if (isAdding) {
+    if (isAdding || editingId) {
       // Small timeout to ensure the element is rendered and animation has started
       const timer = setTimeout(() => {
         addFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isAdding]);
+  }, [isAdding, editingId]);
 
-  // Handle Escape key to cancel adding
+  // Handle Escape key to cancel adding/editing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isAdding) {
-        setIsAdding(false);
+      if (e.key === 'Escape' && (isAdding || editingId)) {
+        closeForm();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAdding]);
+  }, [isAdding, editingId]);
 
   // --- Date Selector Helpers ---
   const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -138,6 +139,30 @@ export default function TransactionsPage() {
       .sort((a, b) => b.budget - a.budget);
   }, [categories, envelopes, transactions]);
 
+  const closeForm = () => {
+    setIsAdding(false);
+    setEditingId(null);
+    setFormData({
+      description: '',
+      amount: '',
+      categoryId: '',
+      accountId: '',
+      date: new Date().toISOString().split('T')[0]
+    });
+  };
+
+  const handleEdit = (tx: typeof filteredTransactions[number]) => {
+    setIsAdding(false);
+    setEditingId(tx.id);
+    setFormData({
+      description: tx.description,
+      amount: String(tx.amount),
+      categoryId: tx.categoryId ?? '',
+      accountId: tx.accountId ?? '',
+      date: new Date(tx.date).toISOString().split('T')[0]
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -145,25 +170,29 @@ export default function TransactionsPage() {
       const enteredAmount = parseFloat(formData.amount);
       const amount = enteredAmount > 0 ? -enteredAmount : enteredAmount;
 
-      await createTx.mutateAsync({
-        description: formData.description,
-        amount: amount,
-        categoryId: formData.categoryId,
-        accountId: formData.accountId,
-        date: new Date(formData.date),
-        isFixed: false,
-        checked: false
-      });
-      setIsAdding(false);
-      setFormData({ 
-        description: '', 
-        amount: '', 
-        categoryId: '', 
-        accountId: '', 
-        date: new Date().toISOString().split('T')[0] 
-      });
+      if (editingId) {
+        await updateTx.mutateAsync({
+          id: editingId,
+          description: formData.description,
+          amount: amount,
+          categoryId: formData.categoryId,
+          accountId: formData.accountId,
+          date: new Date(formData.date)
+        });
+      } else {
+        await createTx.mutateAsync({
+          description: formData.description,
+          amount: amount,
+          categoryId: formData.categoryId,
+          accountId: formData.accountId,
+          date: new Date(formData.date),
+          isFixed: false,
+          checked: false
+        });
+      }
+      closeForm();
     } catch {
-      alert("Erreur lors de la création");
+      alert(editingId ? "Erreur lors de la modification" : "Erreur lors de la création");
     }
   };
 
@@ -231,12 +260,12 @@ export default function TransactionsPage() {
             )}
           </div>
 
-          <button 
-            onClick={() => setIsAdding(!isAdding)}
-            className={`${isAdding ? 'bg-gray-100 text-gray-500' : 'bg-blue-600 text-white'} px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:opacity-80 transition-all shadow-lg`}
+          <button
+            onClick={() => { if (isAdding || editingId) { closeForm(); } else { setIsAdding(true); } }}
+            className={`${(isAdding || editingId) ? 'bg-gray-100 text-gray-500' : 'bg-blue-600 text-white'} px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:opacity-80 transition-all shadow-lg`}
           >
-            {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {isAdding ? 'Annuler' : 'Nouvelle opération'}
+            {(isAdding || editingId) ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {(isAdding || editingId) ? 'Annuler' : 'Nouvelle opération'}
           </button>
         </div>
 
@@ -292,15 +321,19 @@ export default function TransactionsPage() {
           )}
         </div>
 
-        {isAdding && (
+        {(isAdding || editingId) && (
           <div ref={addFormRef} className="bg-white p-8 rounded-[2rem] border-2 border-blue-100 shadow-xl animate-in slide-in-from-top-4 duration-300">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Plus className="w-6 h-6" /></div>
-                <h3 className="text-xl font-black uppercase tracking-tight">Ajouter une transaction</h3>
+                <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                  {editingId ? <Pencil className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight">
+                  {editingId ? 'Modifier la transaction' : 'Ajouter une transaction'}
+                </h3>
               </div>
-              <button 
-                onClick={() => setIsAdding(false)}
+              <button
+                onClick={closeForm}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="w-6 h-6" />
@@ -376,17 +409,17 @@ export default function TransactionsPage() {
 
               {/* Action Button: Separated */}
               <div className="w-full md:w-auto self-stretch flex items-end">
-                <button 
-                  type="submit" 
-                  disabled={createTx.isPending}
+                <button
+                  type="submit"
+                  disabled={createTx.isPending || updateTx.isPending}
                   className="w-full md:w-24 h-[calc(100%-24px)] bg-blue-600 text-white rounded-3xl font-black uppercase hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-100 flex flex-col items-center justify-center gap-2"
                 >
-                  {createTx.isPending ? (
+                  {(createTx.isPending || updateTx.isPending) ? (
                     <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
                     <>
                       <CheckCircle2 className="w-6 h-6" />
-                      <span className="text-[10px]">Valider</span>
+                      <span className="text-[10px]">{editingId ? 'Modifier' : 'Valider'}</span>
                     </>
                   )}
                 </button>
@@ -479,12 +512,20 @@ export default function TransactionsPage() {
                         {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('fr-FR')} €
                       </td>
                       <td className="px-8 py-5 text-right">
-                        <button 
-                          onClick={() => handleDelete(tx.id)}
-                          className="p-2 text-gray-200 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleEdit(tx)}
+                            className="p-2 text-gray-200 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(tx.id)}
+                            className="p-2 text-gray-200 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
