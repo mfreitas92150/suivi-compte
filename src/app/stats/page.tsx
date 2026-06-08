@@ -136,7 +136,7 @@ export default function StatsPage() {
                     bottom: 5,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={true} stroke="#e5e7eb" />
                   <XAxis 
                     dataKey="name" 
                     axisLine={false}
