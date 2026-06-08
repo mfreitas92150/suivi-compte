@@ -103,14 +103,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         )}
 
-        {/* Floating Action Button for Mobile */}
-        <Link 
-          href="/mobile" 
-          className="md:hidden fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg z-40"
-        >
-          <Plus className="w-6 h-6" />
-        </Link>
-
         <main className="p-6 overflow-auto">
           {children}
         </main>
