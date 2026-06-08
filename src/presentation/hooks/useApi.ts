@@ -118,6 +118,16 @@ export const useDeleteRecurringTransaction = () => {
   });
 };
 
+export const useAnnualStats = (year: number) => {
+  return useQuery<{ month: number; income: number; expense: number }[]>({
+    queryKey: ['annual-stats', year],
+    queryFn: async () => {
+      const { data } = await api.get('/stats/annual', { params: { year } });
+      return data;
+    },
+  });
+};
+
 // Accounts
 export const useAccounts = () => {
   return useQuery<Account[]>({

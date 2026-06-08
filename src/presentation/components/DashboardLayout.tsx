@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { LayoutDashboard, ReceiptText, Settings, Menu, X, Plus, Target, Gauge } from 'lucide-react';
+import { LayoutDashboard, ReceiptText, Settings, Menu, X, Plus, Target, Gauge, BarChart2 } from 'lucide-react';
 import { useState } from 'react';
 import { UserButton } from '@clerk/nextjs';
 import { useSearchParams, usePathname } from 'next/navigation';
@@ -10,16 +10,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  
+
   const month = searchParams.get('month');
   const year = searchParams.get('year');
   const queryString = (month && year) ? `?month=${month}&year=${year}` : '';
+  const yearOnlyString = year ? `?year=${year}` : '';
 
   const navItems = [
     { name: 'Tableau de bord', href: `/${queryString}`, basePath: '/', icon: LayoutDashboard, disabled: true },
     { name: 'Pilotage', href: `/pilotage${queryString}`, basePath: '/pilotage', icon: Gauge },
     { name: 'Enveloppes', href: `/envelopes${queryString}`, basePath: '/envelopes', icon: Target, disabled: true },
     { name: 'Transactions', href: `/transactions${queryString}`, basePath: '/transactions', icon: ReceiptText },
+    { name: 'Statistiques', href: `/stats${yearOnlyString}`, basePath: '/stats', icon: BarChart2 },
     { name: 'Paramètres', href: '/config', basePath: '/config', icon: Settings },
   ];
 
