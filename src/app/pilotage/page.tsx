@@ -358,12 +358,19 @@ export default function PilotagePage() {
         {/* MAIN GRID */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="space-y-6">
-            <Section title="Revenus fixes" icon={<TrendingUp className="w-4 h-4" />} badge={`${totalFixedIncomes.toLocaleString('fr-FR')} €`}>
+            <Section 
+              title="Revenus fixes" 
+              icon={<TrendingUp className="w-4 h-4" />} 
+              badge={`${totalFixedIncomes.toLocaleString('fr-FR')} €`}
+            >
               <Checklist 
                 items={fixedIncomes} 
                 onToggle={(id, checked) => handleToggleCheck(id, checked)} 
                 onUpdateAmount={(id, val) => handleUpdateAmount(id, val)}
+                onUpdateLabel={handleUpdateLabel}
+                onDelete={(id) => handleDeleteItem(id)}
                 accentColor="blue" 
+                isEditableLabel={true}
                 updatingId={updateMonthlyItem.isPending ? updateMonthlyItem.variables?.id : null}
               />
             </Section>
@@ -384,7 +391,12 @@ export default function PilotagePage() {
           </div>
 
           <div className="space-y-6">
-            <Section title="Charges fixes" icon={<TrendingDown className="w-4 h-4" />} badge={`${totalFixedCharges.toLocaleString('fr-FR')} €`} color="rose">
+            <Section 
+              title="Charges fixes" 
+              icon={<TrendingDown className="w-4 h-4" />} 
+              badge={`${totalFixedCharges.toLocaleString('fr-FR')} €`} 
+              color="rose"
+            >
               <div className="space-y-4">
                 {chargeGroups.map(group => {
                   const groupItems = fixedCharges.filter(item => group.ids.includes(item.id));
@@ -422,7 +434,10 @@ export default function PilotagePage() {
                             items={groupItems} 
                             onToggle={(id, checked) => handleToggleCheck(id, checked)} 
                             onUpdateAmount={(id, val) => handleUpdateAmount(id, val)}
+                            onUpdateLabel={handleUpdateLabel}
+                            onDelete={(id) => handleDeleteItem(id)}
                             accentColor="rose" 
+                            isEditableLabel={true}
                             updatingId={updateMonthlyItem.isPending ? updateMonthlyItem.variables?.id : null}
                           />
                         </div>
