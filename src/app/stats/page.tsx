@@ -11,6 +11,7 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
+  ReferenceArea,
   Legend
 } from 'recharts';
 import { Calendar, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Scale } from 'lucide-react';
@@ -140,8 +141,6 @@ export default function StatsPage() {
                     strokeDasharray="3 3" 
                     vertical={false} 
                     stroke="#f0f0f0" 
-                    verticalFill={['#f3f4f6', 'transparent']} 
-                    fillOpacity={1}
                   />
                   <XAxis 
                     dataKey="name" 
@@ -164,6 +163,21 @@ export default function StatsPage() {
                     formatter={(value: any) => formatCurrency(Number(value))}
                   />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                  {/* Alternating backgrounds */}
+                  {chartData.map((_, index) => {
+                    if (index % 2 === 0) {
+                      return (
+                        <ReferenceArea 
+                          key={`ref-${index}`} 
+                          x1={chartData[index].name} 
+                          x2={index < chartData.length - 1 ? chartData[index + 1].name : undefined}
+                          fill="#f3f4f6" 
+                          fillOpacity={1} 
+                        />
+                      );
+                    }
+                    return null;
+                  })}
                   <Bar dataKey="Revenus" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
                   <Bar dataKey="Dépenses" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
                 </BarChart>
