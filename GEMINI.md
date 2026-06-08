@@ -56,6 +56,7 @@ L'application est déployée automatiquement via Vercel à chaque push sur la br
 3.  Pousser les changements sur Turso : `npx prisma db push`.
 
 ## Règles de Développement
+- **Style d'Interaction** : Ultra-concis obligatoire. Supprimer mots remplissage (le, la, est, sont). Réponses directes. Phrases courtes (3-6 mots). Lancer outils d'abord. Pas narration.
 - **Découpage strict** : Ne jamais appeler Prisma directement depuis les composants ou Server Actions. Passer systématiquement par un Cas d'Usage et une Interface de Repository.
 - **Mobile-First** : Toute nouvelle fonctionnalité de saisie doit avoir une interface simplifiée pour smartphone.
 - **Données Sensibles** : Les secrets et URLs de base de données doivent rester dans le fichier `.env` (non committé).
